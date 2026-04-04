@@ -1,2 +1,0 @@
-# SatarkAii
-Personal Portfolio App
