@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ConsumerHelp | Titanium SKT Pro v2.8</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+        :root {
+            --bg-silver: #e2e8f0;
+            --metal-shadow-dark: #b8c2cc;
+            --metal-shadow-light: #ffffff;
+            --accent-blue: #4285f4;
+            --gemini-bg: #0a0a0a;
+            --text-main: #1e293b; 
+        }
+
+        * {
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            box-sizing: border-box;
+        }
+
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background: #e2e8f0; 
+            color: var(--text-main); 
+            overflow-x: hidden; 
+            min-height: 100vh; 
+            position: relative;
+        }
+
+        /* --- Splash Screen Animation --- */
+        #splashScreen {
+            position: fixed;
+            inset: 0;
+            background: #e2e8f0;
+            z-index: 50000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            transition: all 1s ease-in-out;
+        }
+
+        .splash-text-container {
+            font-size: 2.8rem;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            width: 100%;
+        }
+
+        #splash-prefix {
+            transition: all 0.7s cubic-bezier(0.19, 1, 0.22, 1);
+            display: inline-block;
+            white-space: nowrap;
+        }
+
+        #splash-ai {
+            width: 0;
+            opacity: 0;
+            color: #4285f4;
+            transition: all 0.7s cubic-bezier(0.19, 1, 0.22, 1);
+            white-space: nowrap;
+            display: inline-block;
+            overflow: hidden;
+            text-align: right;
+        }
+
+        #splash-suffix {
+            color: #1e293b;
+            margin-left: 6px;
+            transition: all 0.7s cubic-bezier(0.19, 1, 0.22, 1);
+            display: inline-block;
+        }
+
+        /* Push Animation State */
+        .splash-active #splash-prefix {
+            transform: translateX(150px);
+            width: 0;
+            opacity: 0;
+            margin: 0;
+        }
+
+        .splash-active #splash-ai {
+            width: 60px; /* Adjust based on 'AI' width */
+            opacity: 1;
+            margin-right: 2px; /* Bringing it 'akdum pass' to Help */
+        }
+
+        .splash-active #splash-suffix {
+            margin-left: 0; /* Removing gap to bring Help closer to AI */
+        }
+
+        /* --- Apple Intelligence Style Edge Glow --- */
+        .siri-glow-container {
+            position: fixed;
+            inset: 0;
+            z-index: 9998;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.8s ease;
+        }
+
+        body.ai-active .siri-glow-container, .splash-glow .siri-glow-container {
+            opacity: 1;
+        }
+
+        .siri-border {
+            position: absolute;
+            inset: 0;
+            border: 6px solid transparent;
+            pointer-events: none;
+        }
+
+        body.ai-active .siri-border::before, .splash-glow .siri-border::before {
+            content: "";
+            position: absolute;
+            inset: -20px;
+            background: conic-gradient(from 0deg, #4285f4, #9b72cb, #d96570, #4285f4);
+            animation: rotateGlow 3s linear infinite;
+            filter: blur(35px);
+        }
+
+        @keyframes rotateGlow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        body.ai-active::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(18px);
+            z-index: 9997;
+            pointer-events: auto;
+        }
+
+        /* --- AI Interaction Panel --- */
+        .ai-chat-panel {
+            position: fixed;
+            bottom: -100%;
+            left: 0;
+            right: 0;
+            z-index: 10000;
+            padding: 24px;
+            transition: bottom 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        body.ai-active .ai-chat-panel {
+            bottom: 60px;
+        }
+
+        .chat-history {
+            width: 100%;
+            max-width: 500px;
+            max-height: 55vh;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 10px;
+        }
+
+        .chat-bubble {
+            padding: 14px 20px;
+            border-radius: 24px;
+            font-size: 14px;
+            line-height: 1.5;
+            max-width: 85%;
+            animation: bubblePop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes bubblePop {
+            from { transform: translateY(10px) scale(0.9); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+
+        .bubble-ai { background: rgba(255, 255, 255, 0.15); color: white; align-self: flex-start; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        .bubble-user { background: #4285f4; color: white; align-self: flex-end; box-shadow: 0 4px 15px rgba(66, 133, 244, 0.3); }
+
+        .typing-dots { display: flex; gap: 4px; align-items: center; height: 20px; }
+        .dot { width: 6px; height: 6px; background: rgba(255, 255, 255, 0.7); border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
+        .dot:nth-child(1) { animation-delay: -0.32s; }
+        .dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1.0); } }
+
+        .ai-input-wrapper {
+            width: 100%;
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(25px);
+            border-radius: 40px;
+            padding: 8px 8px 8px 24px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+        }
+
+        .ai-input-wrapper input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: white;
+            flex: 1;
+            font-size: 16px;
+        }
+
+        /* --- UI ELEMENTS --- */
+        .skt-elevated {
+            background: #e2e8f0;
+            box-shadow: 8px 8px 16px #b8c2cc, -8px -8px 16px #ffffff;
+            border-radius: 28px;
+            border: 1px solid rgba(255,255,255,0.6);
+        }
+
+        .bottom-nav { 
+            position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); 
+            width: 90%; max-width: 400px; background: rgba(226, 232, 240, 0.85); 
+            backdrop-filter: blur(20px);
+            box-shadow: 10px 10px 30px rgba(184, 194, 204, 0.5), -10px -10px 30px #ffffff;
+            border-radius: 40px; height: 80px; display: flex; justify-content: space-around; 
+            align-items: center; z-index: 11000; border: 1px solid rgba(255,255,255,0.7);
+            transition: all 0.5s ease;
+        }
+
+        .ai-pill { 
+            background: #e2e8f0; 
+            box-shadow: inset 3px 3px 6px #b8c2cc, inset -3px -3px 6px #ffffff; 
+            border-radius: 18px; padding: 8px 24px; font-weight: 800; color: #0ea5e9; 
+            font-size: 11px; letter-spacing: 1px;
+        }
+        
+        .nav-item { color: #64748b; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
+        .nav-item.active { color: #0ea5e9; font-weight: 700; }
+
+        /* --- ENHANCED SLIDER --- */
+        .slide-track { 
+            width: 100%; 
+            height: 68px; 
+            background: #e2e8f0; 
+            box-shadow: inset 6px 6px 12px #b8c2cc, inset -6px -6px 12px #ffffff; 
+            border-radius: 34px; 
+            position: relative; 
+            display: flex; 
+            align-items: center; 
+            padding: 4px;
+            overflow: hidden;
+        }
+        .slide-handle { 
+            width: 60px; 
+            height: 60px; 
+            background: linear-gradient(145deg, #ffffff, #e6e6e6);
+            box-shadow: 4px 4px 10px #b8c2cc, -2px -2px 5px #ffffff; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            cursor: grab; 
+            position: absolute; 
+            left: 4px; 
+            z-index: 30; 
+            border: 1px solid rgba(255,255,255,0.8);
+        }
+        .slide-text { 
+            position: absolute;
+            width: 100%;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800; 
+            font-size: 13px; 
+            text-transform: uppercase; 
+            letter-spacing: 1.5px; 
+            color: #94a3b8; 
+            pointer-events: none; 
+            z-index: 10;
+        }
+        
+        .view-container { transition: all 0.4s ease; padding: 80px 20px 120px 20px; min-height: 100vh; }
+        .hidden-view { display: none; opacity: 0; }
+
+        .skt-input { width: 100%; background: #e2e8f0; border: none; box-shadow: inset 3px 3px 6px #b8c2cc, inset -3px -3px 6px #ffffff; border-radius: 16px; padding: 12px 16px; color: #1e293b; font-weight: 700; outline: none; }
+    </style>
+</head>
+<body class="no-scrollbar">
+
+    <!-- OPENING ANIMATION SPLASH SCREEN -->
+    <div id="splashScreen">
+        <div class="splash-text-container">
+            <span id="splash-ai">AI</span>
+            <span id="splash-prefix">Consumer</span>
+            <span id="splash-suffix">Help</span>
+        </div>
+        <p class="mt-4 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 opacity-50">Initializing Justice Protocol</p>
+    </div>
+
+    <!-- SIRI GLOW OVERLAY -->
+    <div class="siri-glow-container">
+        <div class="siri-border"></div>
+    </div>
+
+    <!-- AI INTERACTION PANEL -->
+    <div class="ai-chat-panel" id="aiPanel">
+        <div class="chat-history no-scrollbar" id="aiChatHistory">
+            <!-- Chat history injected here -->
+        </div>
+        <div class="ai-input-wrapper">
+            <input type="text" id="aiInput" placeholder="Message Satark AI..." onkeydown="if(event.key === 'Enter') handleAiAction()">
+            <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-white cursor-pointer hover:bg-white/30" onclick="handleAiAction()">
+                <i data-lucide="arrow-up" class="w-5 h-5"></i>
+            </div>
+        </div>
+        <button onclick="toggleAiMode(false)" class="mt-6 text-white/40 text-[10px] font-black uppercase tracking-[0.3em]">Exit Assistant</button>
+    </div>
+
+    <!-- HUD Elements -->
+    <div id="msgBox" class="fixed bottom-[110px] left-1/2 -translate-x-1/2 bg-slate-800 text-white px-6 py-2 rounded-full text-xs font-bold z-[20000] hidden"></div>
+
+    <!-- NOTIFICATION -->
+    <div id="lockWarning" class="fixed top-[-200px] left-[5%] w-[90%] bg-white/90 backdrop-blur-xl rounded-[30px] p-6 shadow-2xl z-[12000] transition-all duration-500">
+        <div class="text-center">
+            <h4 class="text-sm font-black text-slate-800 uppercase tracking-tight">Access Restricted</h4>
+            <p class="text-[11px] font-bold text-slate-500 mt-1">Profile verification is required to use AI Case Filing.</p>
+        </div>
+        <p class="text-[9px] text-center font-black text-sky-600 uppercase mt-4">Redirecting in <span id="countdown">3</span>s...</p>
+    </div>
+
+    <!-- SUCCESS POPUP -->
+    <div id="successPopupOverlay" class="fixed inset-0 bg-black/40 backdrop-blur-md z-[13000] flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="bg-[#e2e8f0] w-[85%] max-w-[340px] rounded-[40px] p-8 text-center shadow-2xl border border-white/50">
+            <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6"><i data-lucide="check-circle" class="w-8 h-8"></i></div>
+            <h3 class="text-lg font-black uppercase">Case Submitted</h3>
+            <p class="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest">Tracking Reference:</p>
+            <div class="bg-white/50 py-3 rounded-2xl mt-3 text-xl font-black text-emerald-600 tracking-widest shadow-inner" id="generatedId">CH-000000</div>
+            <p class="text-[11px] font-medium text-slate-500 mt-6 px-2">Our legal verification team will contact you via WhatsApp within 24 hours.</p>
+            <button onclick="closePopups()" class="mt-8 bg-sky-500 text-white font-black text-[11px] uppercase tracking-widest px-10 py-3 rounded-full shadow-lg">Done</button>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <div class="fixed top-0 left-0 w-full p-6 flex justify-between items-center z-[9000]">
+        <div class="w-12 h-12 skt-elevated flex items-center justify-center cursor-pointer" onclick="toggleSidebar(true)"><i data-lucide="menu" class="w-5 h-5"></i></div>
+        <div class="text-[9px] font-black uppercase tracking-[0.4em] text-slate-400">Titanium Pro v2.8</div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black/20 backdrop-blur-sm hidden z-[10000]" onclick="toggleSidebar(false)"></div>
+    <div id="sidebar" class="fixed top-0 left-[-300px] w-[280px] h-full bg-[#e2e8f0] z-[10001] transition-all duration-400 p-8 border-r border-white/50">
+        <div class="flex justify-between items-center mb-10"><h3 class="font-black uppercase text-xs text-slate-400">System</h3><i data-lucide="x" class="w-5 h-5 cursor-pointer" onclick="toggleSidebar(false)"></i></div>
+        <div class="space-y-4">
+            <div onclick="handleNav('track')" class="p-4 bg-white/40 rounded-2xl flex items-center gap-3 font-bold text-sm shadow-sm"><i data-lucide="search" class="w-4 h-4 text-sky-500"></i><span>Status Center</span></div>
+            <div onclick="handleNav('logic')" class="p-4 bg-white/40 rounded-2xl flex items-center gap-3 font-bold text-sm shadow-sm"><i data-lucide="info" class="w-4 h-4 text-sky-500"></i><span>How it Works</span></div>
+            <div onclick="openInstagram()" class="p-4 bg-white/40 rounded-2xl flex items-center gap-3 font-bold text-sm shadow-sm"><i data-lucide="instagram" class="w-4 h-4 text-pink-500"></i><span>Instagram</span></div>
+        </div>
+    </div>
+
+    <!-- HOME VIEW -->
+    <div id="homeView" class="view-container">
+        <section class="text-center pt-16">
+            <h1 class="text-5xl font-black mb-4 leading-tight tracking-tighter">Justice <br><span class="text-sky-500">Accelerated.</span></h1>
+            <p class="uppercase tracking-[0.2em] text-slate-500 mb-20 text-[11px] font-black">AI-Driven Consumer Portal</p>
+            
+            <div class="slide-track" id="homeSlider">
+                <div class="slide-text" id="homeSliderText">Slide to file a case</div>
+                <div class="slide-handle" id="homeHandle">
+                    <i data-lucide="chevron-right" class="w-6 h-6 text-sky-500"></i>
+                </div>
+            </div>
+            
+            <div class="mt-20 grid grid-cols-2 gap-4">
+                <div class="skt-elevated p-6 text-left">
+                    <i data-lucide="percent" class="w-6 h-6 text-sky-500 mb-2"></i>
+                    <p class="text-[10px] font-black uppercase text-slate-400">Success Fee</p>
+                    <p class="text-sm font-bold">5% - 10% Only</p>
+                </div>
+                <div class="skt-elevated p-6 text-left">
+                    <i data-lucide="shield-check" class="w-6 h-6 text-emerald-500 mb-2"></i>
+                    <p class="text-[10px] font-black uppercase text-slate-400">Zero Advance</p>
+                    <p class="text-sm font-bold">No Pay No Win</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- TRACKING VIEW -->
+    <div id="trackView" class="view-container hidden-view">
+        <h2 class="text-3xl font-black mb-8 tracking-tighter">Track Status</h2>
+        <div class="skt-elevated p-6">
+            <div><label class="text-[10px] font-black uppercase text-slate-400 ml-2">Grievance ID</label><input type="text" id="trackInput" placeholder="CH-XXXXXX" class="skt-input mt-1"></div>
+            <button onclick="performTracking()" class="w-full mt-6 bg-sky-500 text-white font-black py-4 rounded-2xl shadow-lg uppercase text-sm">Check Status</button>
+            <div id="trackResult" class="hidden mt-10 space-y-6">
+                <div class="skt-pressed p-5 flex items-center gap-4"><div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center"><i data-lucide="activity" class="text-sky-500"></i></div><div><p class="text-[9px] font-black text-slate-400 uppercase">Current State</p><p class="text-lg font-black" id="statusText">Active Review</p></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PROFILE VIEW -->
+    <div id="profileView" class="view-container hidden-view">
+        <h2 class="text-3xl font-black mb-8 tracking-tighter">My Account</h2>
+        <div class="skt-elevated p-8 text-center">
+            <div id="unverifiedState">
+                <div class="w-20 h-20 skt-pressed flex items-center justify-center mx-auto mb-6 text-slate-300"><i data-lucide="shield-plus" class="w-10 h-10"></i></div>
+                <h3 class="text-xl font-black mb-1 uppercase">Link Identity</h3>
+                <p class="text-[10px] font-bold text-slate-400 mb-8 uppercase">Phone Verification Required</p>
+                <input type="tel" id="mobileInput" placeholder="10 Digit Number" class="skt-input text-center text-lg mb-6">
+                <button onclick="verifyProfile()" class="w-full bg-sky-500 text-white font-black py-4 rounded-2xl uppercase">Verify Now</button>
+            </div>
+            <div id="verifiedState" class="hidden">
+                <div class="w-20 h-20 skt-pressed flex items-center justify-center mx-auto mb-6 text-emerald-500"><i data-lucide="check-circle" class="w-10 h-10"></i></div>
+                <h3 class="text-xl font-black mb-1 uppercase">Verified Identity</h3>
+                <p id="displayNum" class="text-sky-500 font-black text-lg mb-8 tracking-widest">+91 0000000000</p>
+                <div class="grid grid-cols-2 gap-4"><div class="skt-pressed p-4"><p class="text-[9px] font-black text-slate-400 uppercase">Cases</p><p class="text-xl font-black" id="caseCount">0</p></div><div class="skt-pressed p-4"><p class="text-[9px] font-black text-slate-400 uppercase">Status</p><p class="text-lg font-black text-sky-500">Platinum</p></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGIC VIEW -->
+    <div id="logicView" class="view-container hidden-view">
+        <div onclick="switchView('home')" class="mb-6 flex items-center gap-2 font-black uppercase text-[10px] text-sky-600"><i data-lucide="arrow-left" class="w-4 h-4"></i> Home</div>
+        <h2 class="text-3xl font-black mb-8 tracking-tighter">Methodology</h2>
+        <div class="space-y-6">
+            <div class="skt-elevated p-6"><h5 class="text-sky-500 font-black uppercase text-xs mb-1">01. Legal Assessment</h5><p class="text-sm font-bold leading-relaxed">Our AI reviews digital evidence against the Consumer Protection Act standards.</p></div>
+            <div class="skt-elevated p-6"><h5 class="text-sky-500 font-black uppercase text-xs mb-1">02. Formal Mediation</h5><p class="text-sm font-bold leading-relaxed">We serve legal notices to company boards for 15-day ultimatum settlements.</p></div>
+        </div>
+    </div>
+
+    <!-- NAVIGATION BAR -->
+    <div id="bottomNav" class="bottom-nav">
+        <div onclick="switchView('track')" id="nav-track" class="nav-item"><i data-lucide="search" class="w-6 h-6"></i><span class="text-[8px] font-black uppercase">Track</span></div>
+        <div onclick="toggleAiMode(true)" class="nav-item"><div class="ai-pill">SATARK AI</div></div>
+        <div onclick="switchView('profile')" id="nav-profile" class="nav-item"><i data-lucide="user" class="w-6 h-6"></i><span class="text-[8px] font-black uppercase">Profile</span></div>
+        <div onclick="switchView('home')" id="nav-home" class="nav-item active"><i data-lucide="home" class="w-6 h-6"></i><span class="text-[8px] font-black uppercase">Home</span></div>
+    </div>
+
+    <script>
+        let appState = {
+            user: { verified: false, mobile: "", casesCount: 0 },
+            grievances: {},
+            currentView: 'home',
+            isAiActive: false,
+            isLockRunning: false,
+            aiFlow: {
+                active: false,
+                step: 0,
+                category: '',
+                data: {}
+            }
+        };
+
+        lucide.createIcons();
+
+        // SPLASH SEQUENCE
+        function startOpeningAnimation() {
+            const splash = document.getElementById('splashScreen');
+            setTimeout(() => {
+                splash.classList.add('splash-active');
+                if (navigator.vibrate) navigator.vibrate(50);
+            }, 1500);
+
+            setTimeout(() => {
+                document.body.classList.add('splash-glow');
+            }, 2100);
+
+            setTimeout(() => {
+                splash.style.opacity = '0';
+                splash.style.pointerEvents = 'none';
+                document.body.classList.remove('splash-glow');
+            }, 3500);
+        }
+
+        function showMsg(text) {
+            const msg = document.getElementById('msgBox');
+            msg.innerText = text;
+            msg.classList.remove('hidden');
+            setTimeout(() => msg.classList.add('hidden'), 3000);
+        }
+
+        function toggleAiMode(active, isFormStart = false) {
+            appState.isAiActive = active;
+            const chatHistory = document.getElementById('aiChatHistory');
+            
+            if (active) {
+                document.body.classList.add('ai-active');
+                if (navigator.vibrate) navigator.vibrate([30, 20, 30]);
+                
+                if (isFormStart) {
+                    appState.aiFlow.active = true;
+                    appState.aiFlow.step = 1;
+                    appState.aiFlow.category = '';
+                    appState.aiFlow.data = {};
+                    chatHistory.innerHTML = "";
+                    addAiResponse("Welcome! I am Satark AI. Let's start filing your case.");
+                    setTimeout(() => {
+                        addAiResponse("Which type of complaint would you like to file? Please type 'Consumer' or 'Cyber'.");
+                    }, 1500);
+                } else if (chatHistory.innerHTML.trim() === "") {
+                    addAiResponse("Hello! I am Satark AI. I provide professional assistance for consumer grievances and cyber crime recovery.");
+                    setTimeout(() => {
+                        addAiResponse("We charge a 5-10% success fee only after your case is won. How can I help you today?");
+                    }, 1500);
+                }
+            } else {
+                document.body.classList.remove('ai-active');
+                appState.aiFlow.active = false;
+                appState.aiFlow.step = 0;
+            }
+        }
+
+        function addAiResponse(text, delay = 1200) {
+            const chat = document.getElementById('aiChatHistory');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = "chat-bubble bubble-ai flex items-center";
+            typingDiv.innerHTML = `<div class="typing-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
+            chat.appendChild(typingDiv);
+            chat.scrollTop = chat.scrollHeight;
+
+            setTimeout(() => {
+                typingDiv.remove();
+                const div = document.createElement('div');
+                div.className = "chat-bubble bubble-ai";
+                div.innerText = text;
+                chat.appendChild(div);
+                chat.scrollTop = chat.scrollHeight;
+                if (navigator.vibrate) navigator.vibrate(20);
+            }, delay);
+        }
+
+        function addUserBubble(text) {
+            const chat = document.getElementById('aiChatHistory');
+            const div = document.createElement('div');
+            div.className = "chat-bubble bubble-user";
+            div.innerText = text;
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        function handleAiAction() {
+            const input = document.getElementById('aiInput');
+            const query = input.value.trim();
+            if (!query) return;
+
+            addUserBubble(query);
+            input.value = "";
+
+            if (appState.aiFlow.active) {
+                handleFlowStep(query);
+            } else {
+                const q = query.toLowerCase();
+                if (q.includes('fee') || q.includes('charge')) {
+                    addAiResponse("We charge a success fee of 5% to 10% only after the money is recovered. No advance payment required.");
+                } else if (q.includes('yes') && appState.aiFlow.step === 7) {
+                    redirectToWhatsApp();
+                } else {
+                    addAiResponse("I am currently specialized in filing new cases. Slide the button on the home screen to start a formal grievance.");
+                }
+            }
+            if (navigator.vibrate) navigator.vibrate(30);
+        }
+
+        function handleFlowStep(answer) {
+            const flow = appState.aiFlow;
+            const ansLower = answer.toLowerCase();
+
+            switch(flow.step) {
+                case 1:
+                    if (ansLower.includes('cyber')) {
+                        flow.category = 'cyber';
+                        flow.step = 2;
+                        addAiResponse("Cyber Crime Reporting selected. What is your Full Name?");
+                    } else if (ansLower.includes('consumer')) {
+                        flow.category = 'consumer';
+                        flow.step = 2;
+                        addAiResponse("Consumer Grievance selected. What is your Full Name?");
+                    } else {
+                        addAiResponse("Please specify: 'Consumer' or 'Cyber'?");
+                    }
+                    break;
+                
+                case 2:
+                    flow.data.name = answer;
+                    flow.step = 3;
+                    const target = flow.category === 'cyber' ? 'platform or app (e.g. WhatsApp, Fake Site)' : 'company or brand';
+                    addAiResponse(`Thank you, ${answer}. Please name the ${target} you are filing against.`);
+                    break;
+                
+                case 3:
+                    flow.data.party = answer;
+                    flow.step = 4;
+                    addAiResponse(`What is the total amount (₹) involve? Please enter numbers only.`);
+                    break;
+
+                case 4:
+                    flow.data.amount = answer;
+                    if (flow.category === 'cyber') {
+                        flow.step = 4.5;
+                        addAiResponse("Please provide the UPI Transaction ID or Reference Number for the fraud.");
+                    } else {
+                        flow.step = 5;
+                        addAiResponse("Please briefly describe your grievance.");
+                    }
+                    break;
+
+                case 4.5:
+                    flow.data.upi = answer;
+                    flow.step = 5;
+                    addAiResponse("Got it. Now briefly describe how the fraud happened.");
+                    break;
+
+                case 5:
+                    flow.data.subject = answer;
+                    flow.step = 6;
+                    showSummaryAndFinalize();
+                    break;
+            }
+        }
+
+        function showSummaryAndFinalize() {
+            const flow = appState.aiFlow;
+            const id = "CH-" + Math.floor(100000 + Math.random() * 900000);
+            appState.grievances[id] = { status: 'Awaiting Redirect', ...flow.data };
+            appState.user.casesCount++;
+            document.getElementById('caseCount').innerText = appState.user.casesCount;
+
+            addAiResponse("Here is a summary of the details you provided:");
+            
+            setTimeout(() => {
+                const chat = document.getElementById('aiChatHistory');
+                const summaryDiv = document.createElement('div');
+                summaryDiv.className = "chat-bubble bubble-ai";
+                summaryDiv.innerHTML = `
+                    <div class="font-black mb-2 uppercase text-[10px] text-sky-400">Case Summary</div>
+                    <div class="space-y-1 opacity-90">
+                        <div><b>Name:</b> ${flow.data.name}</div>
+                        <div><b>Type:</b> ${flow.category.toUpperCase()}</div>
+                        <div><b>Target:</b> ${flow.data.party}</div>
+                        <div><b>Amount:</b> ₹${flow.data.amount}</div>
+                        ${flow.data.upi ? `<div><b>UPI/Ref:</b> ${flow.data.upi}</div>` : ''}
+                        <div><b>Desc:</b> ${flow.data.subject}</div>
+                    </div>
+                `;
+                chat.appendChild(summaryDiv);
+                chat.scrollTop = chat.scrollHeight;
+
+                setTimeout(() => {
+                    addAiResponse("Case logged successfully!");
+                    addAiResponse(`Your Case ID: ${id}`);
+                    setTimeout(() => {
+                        addAiResponse("Would you like to redirect to our official WhatsApp support now to submit these details? (Type 'Yes')");
+                        appState.aiFlow.step = 7;
+                        appState.aiFlow.id = id;
+                    }, 1000);
+                }, 1000);
+            }, 1500);
+        }
+
+        function redirectToWhatsApp() {
+            const flow = appState.aiFlow;
+            const msg = `Hello ConsumerHelp India,\n\nI want to file a case.\n\n*Case ID:* ${flow.id}\n*Name:* ${flow.data.name}\n*Category:* ${flow.category.toUpperCase()}\n*Party:* ${flow.data.party}\n*Amount:* ₹${flow.data.amount}\n${flow.data.upi ? `*UPI/Ref:* ${flow.data.upi}\n` : ''}*Issue:* ${flow.data.subject}\n\nPlease guide me on next steps.`;
+            const waUrl = `https://wa.me/917757846079?text=${encodeURIComponent(msg)}`;
+            
+            addAiResponse("Redirecting you to WhatsApp...");
+            setTimeout(() => {
+                window.open(waUrl, '_blank');
+                document.getElementById('generatedId').innerText = flow.id;
+                document.getElementById('successPopupOverlay').style.opacity = '1';
+                document.getElementById('successPopupOverlay').style.pointerEvents = 'auto';
+            }, 1000);
+        }
+
+        function switchView(viewId) {
+            if (appState.currentView === viewId) return;
+            toggleAiMode(false);
+            document.querySelectorAll('.view-container').forEach(v => v.classList.add('hidden-view'));
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            const nav = document.getElementById('nav-' + viewId);
+            if (nav) nav.classList.add('active');
+            const view = document.getElementById(viewId + 'View');
+            if (view) view.classList.remove('hidden-view');
+            appState.currentView = viewId;
+            window.scrollTo(0, 0);
+        }
+
+        function toggleSidebar(show) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            if (show) {
+                overlay.classList.remove('hidden');
+                sidebar.style.left = '0';
+            } else {
+                sidebar.style.left = '-300px';
+                setTimeout(() => overlay.classList.add('hidden'), 400);
+            }
+        }
+
+        function handleNav(view) {
+            toggleSidebar(false);
+            setTimeout(() => switchView(view), 200);
+        }
+
+        function triggerLock() {
+            if (appState.isLockRunning) return;
+            appState.isLockRunning = true;
+            const banner = document.getElementById('lockWarning');
+            banner.style.top = '20px';
+            let count = 3;
+            const timer = setInterval(() => {
+                count--;
+                document.getElementById('countdown').innerText = count;
+                if (count <= 0) {
+                    clearInterval(timer);
+                    banner.style.top = '-200px';
+                    appState.isLockRunning = false;
+                    switchView('profile');
+                }
+            }, 1000);
+        }
+
+        function verifyProfile() {
+            const num = document.getElementById('mobileInput').value;
+            if (num.length < 10) { showMsg("Valid 10-digit number required"); return; }
+            appState.user.verified = true;
+            appState.user.mobile = num;
+            document.getElementById('displayNum').innerText = "+91 " + num;
+            document.getElementById('unverifiedState').classList.add('hidden');
+            document.getElementById('verifiedState').classList.remove('hidden');
+            showMsg("Verification Complete");
+        }
+
+        function setupSlider(handleId, trackId, onComplete) {
+            const handle = document.getElementById(handleId);
+            const track = document.getElementById(trackId);
+            const text = document.getElementById('homeSliderText');
+            let isDragging = false, startX = 0;
+            const start = (e) => {
+                if (handleId === 'homeHandle' && !appState.user.verified) { triggerLock(); return; }
+                isDragging = true;
+                startX = (e.clientX || e.touches[0].clientX);
+                handle.style.transition = 'none';
+            };
+            const move = (e) => {
+                if (!isDragging) return;
+                let x = (e.clientX || e.touches[0].clientX) - startX;
+                const limit = track.clientWidth - handle.clientWidth - 8;
+                if (x < 0) x = 0; if (x > limit) x = limit;
+                handle.style.transform = `translateX(${x}px)`;
+                if (text) text.style.opacity = 1 - (x / limit);
+                if (x >= limit) { isDragging = false; onComplete(); reset(); }
+            };
+            const reset = () => { 
+                handle.style.transition = '0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28)'; 
+                handle.style.transform = 'translateX(0)'; 
+                if (text) text.style.opacity = 1;
+            };
+            handle.addEventListener('mousedown', start); window.addEventListener('mousemove', move); window.addEventListener('mouseup', () => {isDragging=false; reset();});
+            handle.addEventListener('touchstart', start); window.addEventListener('touchmove', move); window.addEventListener('touchend', () => {isDragging=false; reset();});
+        }
+
+        function performTracking() {
+            const id = document.getElementById('trackInput').value.trim().toUpperCase();
+            if (appState.grievances[id]) {
+                document.getElementById('statusText').innerText = "Expert team reviewing digital logs.";
+                document.getElementById('trackResult').classList.remove('hidden');
+            } else { showMsg("Invalid Grievance ID"); }
+        }
+
+        function closePopups() {
+            document.getElementById('successPopupOverlay').style.opacity = '0';
+            document.getElementById('successPopupOverlay').style.pointerEvents = 'none';
+            switchView('home');
+        }
+
+        function openInstagram() {
+            window.open('https://www.instagram.com/consumerhelpindia', '_blank');
+        }
+
+        setupSlider('homeHandle', 'homeSlider', () => toggleAiMode(true, true));
+        
+        window.onload = () => {
+            switchView('home');
+            startOpeningAnimation();
+        };
+    </script>
+</body>
+</html>
+
