@@ -1,0 +1,377 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ConsumerHelp | Astra v20.1</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,700;0,800;1,800&display=swap');
+
+        :root {
+            --bg-silver: #e2e8f0;
+            --india-blue: #000080;
+            --text-main: #1e293b; 
+            --accent-blue: #4285f4;
+            --dark-ui: #0a0a0a;
+            --astra-bg: radial-gradient(circle at center, #111827 0%, #030712 100%);
+            --astra-gradient: linear-gradient(135deg, #4285F4, #9B72CB, #D96570);
+            --elastic: cubic-bezier(0.68, -0.6, 0.32, 1.6);
+        }
+
+        * { -webkit-tap-highlight-color: transparent; user-select: none; box-sizing: border-box; margin: 0; padding: 0; }
+
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #000; color: var(--text-main); overflow: hidden; height: 100vh; width: 100vw; }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+
+        /* --- SPLASH REVEAL ANIMATIONS --- */
+        #splashScreen { position: fixed; inset: 0; background: #000000; z-index: 99000; display: flex; align-items: center; justify-content: center; transition: opacity 0.8s ease; }
+        .reveal-box { display: flex; align-items: center; justify-content: center; }
+        .splash-logo { width: 70px; height: 70px; transform: scale(0); opacity: 0; animation: popLogo 0.8s forwards var(--elastic); }
+        .splash-text { overflow: hidden; width: 0; white-space: nowrap; opacity: 0; display: flex; flex-direction: column; animation: slideRight 1s forwards ease-out 0.8s; }
+        .t1 { font-weight: 900; font-size: 1.8rem; color: #fff; letter-spacing: 2px; line-height: 1; }
+        .t2 { font-weight: 800; font-size: 0.7rem; color: #555; letter-spacing: 5px; text-transform: uppercase; margin-top: 4px; }
+        @keyframes popLogo { to { transform: scale(1); opacity: 1; } }
+        @keyframes slideRight { to { width: 240px; opacity: 1; margin-left: 20px; } }
+
+        /* --- AUTH OVERLAY --- */
+        #authOverlay { position: fixed; inset: 0; background: var(--dark-ui); z-index: 85000; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; opacity: 0; transition: opacity 0.5s ease; }
+        .setup-container { width: 100%; max-width: 400px; padding: 40px 30px; display: flex; flex-direction: column; }
+        .setup-title { font-size: 28px; font-weight: 800; margin-bottom: 15px; letter-spacing: -0.5px; line-height: 1.1; }
+        .setup-input { width: 100%; background: #151515; border: 1px solid #333; padding: 22px; border-radius: 20px; color: white; font-weight: 800; font-size: 17px; outline: none; margin-bottom: 15px; }
+
+        /* --- HOME VIEW --- */
+        #homeView { display: none; min-height: 100vh; background: var(--bg-silver); width: 100%; flex-direction: column; align-items: center; justify-content: center; position: relative; transition: opacity 0.6s ease; }
+        #homeAstraLogo { position: absolute; top: 38%; left: 50%; width: 100px; height: 100px; transform: translate(-50%, -50%); transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1); filter: drop-shadow(0 20px 40px rgba(66, 133, 244, 0.3)); z-index: 200; }
+        #homeAstraLogo.mix-with-slider { top: auto !important; bottom: 140px !important; transform: translate(-50%, 0) scale(0.4) !important; filter: blur(8px) brightness(2); opacity: 0; transition: all 0.6s cubic-bezier(0.7, 0, 0.3, 1) !important; }
+
+        .tc-top-btn { position: absolute; right: 25px; top: 30px; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; opacity: 0; transition: opacity 0.8s ease 1s; z-index: 300; }
+        .tc-top-btn.visible { opacity: 1; }
+        .tc-icon-box { width: 42px; height: 42px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.08); border: 1.5px solid #f1f5f9; }
+
+        .home-info-text { margin-top: 250px; text-align: center; max-width: 320px; opacity: 0; transform: translateY(20px); transition: all 0.8s ease 0.5s; }
+        .home-info-text.visible { opacity: 1; transform: translateY(0); }
+
+        .slide-track { width: 100%; height: 64px; background: #e2e8f0; box-shadow: inset 5px 5px 10px #b8c2cc, inset -5px -5px 10px #ffffff; border-radius: 32px; position: relative; display: flex; align-items: center; padding: 4px; margin-top: 50px; transition: all 0.4s ease; overflow: hidden; }
+        .slide-track.glow { box-shadow: 0 0 40px rgba(66, 133, 244, 0.5); }
+        .slide-handle { width: 56px; height: 56px; background: white; box-shadow: 3px 3px 8px #b8c2cc; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: grab; position: absolute; left: 4px; z-index: 30; transition: transform 0.1s linear; touch-action: none; }
+        .slide-text { position: absolute; width:100%; text-align:center; font-weight:800; font-size:10px; color:#94a3b8; text-transform:uppercase; letter-spacing: 2px; pointer-events:none; }
+
+        /* --- T&C PAGE --- */
+        #tcView { display: none; position: fixed; inset: 0; background: var(--bg-silver); z-index: 95000; flex-direction: column; padding: 40px 25px; overflow-y: auto; }
+        .tc-card { background: white; border-radius: 32px; padding: 30px; box-shadow: 10px 10px 20px #b8c2cc; height: 100%; display: flex; flex-direction: column; }
+        .back-btn { width: 100%; background: #000; color: white; padding: 20px; border-radius: 20px; font-weight: 800; text-transform: uppercase; margin-top: 20px; }
+
+        /* --- MAIN AI PORTAL --- */
+        #mainPortal { display: none; min-height: 100vh; flex-direction: column; background: var(--astra-bg); position: fixed; inset: 0; z-index: 70000; opacity: 0; transition: opacity 0.8s ease; }
+        .ai-header { padding: 20px 25px; display: flex; justify-content: flex-end; align-items: center; background: transparent; }
+        .chat-area { flex: 1; padding: 15px 25px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; padding-bottom: 140px; }
+        .bubble-ai { background: rgba(255, 255, 255, 0.08); color: #f8fafc; font-size: 16px; font-weight: 500; line-height: 1.6; max-width: 92%; text-align: left; white-space: pre-wrap; word-break: break-word; padding: 16px 22px; border-radius: 24px; border-bottom-left-radius: 4px; border: 1px solid rgba(255, 255, 255, 0.1); align-self: flex-start; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: bubbleFade 0.4s ease-out; }
+        .bubble-user { background: var(--india-blue); color: #fff; padding: 14px 22px; border-radius: 24px; border-bottom-right-radius: 4px; align-self: flex-end; font-weight: 600; font-size: 15px; max-width: 85%; word-break: break-word; box-shadow: 0 8px 20px rgba(0,0,0,0.4); animation: throwUp 0.6s var(--elastic); }
+
+        @keyframes bubbleFade { from { opacity: 0; transform: translateY(10px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes throwUp { from { transform: translateY(30px) scale(0.8); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+
+        .input-bar-wrap { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); width: calc(100% - 35px); max-width: 480px; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(45px); border-radius: 35px; padding: 6px; display: flex; align-items: center; border: 1px solid rgba(255,255,255,0.18); box-shadow: 0 20px 50px rgba(0,0,0,0.8); z-index: 71000; }
+        .input-bar-wrap input { background: transparent; border: none; outline: none; color: white; flex: 1; font-size: 16px; font-weight: 500; height: 52px; padding-left: 20px; }
+        .mic-btn { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; margin-right: 5px; position: relative; color: white; }
+        .mic-btn.active { background: rgba(255, 255, 255, 0.2); animation: micWave 1.5s infinite; color: #ef4444; }
+        .send-btn { width: 44px; height: 44px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; cursor: pointer; color: black; }
+        @keyframes micWave { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+    </style>
+</head>
+<body class="no-scrollbar">
+
+    <!-- SPLASH SCREEN -->
+    <div id="splashScreen">
+        <div class="reveal-box">
+            <svg class="splash-logo" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2L14.85 9.15L22 12L14.85 14.85L12 22L9.15 14.85L2 12L9.15 9.15L12 2Z" fill="url(#astraGradSplash)"/>
+                <defs><linearGradient id="astraGradSplash" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse"><stop stop-color="#4285F4"/><stop offset="0.5" stop-color="#9B72CB"/><stop offset="1" stop-color="#D96570"/></linearGradient></defs>
+            </svg>
+            <div class="splash-text"><span class="t1">ASTRA</span><span class="t2">Intelligence</span></div>
+        </div>
+    </div>
+
+    <!-- ONBOARDING -->
+    <div id="authOverlay">
+        <div class="setup-container">
+            <h2 class="setup-title">Legal Node<br>Registry.</h2>
+            <p class="text-gray-400 mb-8 font-medium">Identify yourself to initiate secure documentation.</p>
+            <input type="text" id="setupName" placeholder="Full Legal Name" class="setup-input">
+            <input type="tel" id="setupMobile" placeholder="10-Digit Mobile Number" class="setup-input">
+            <button onclick="finishOnboarding()" class="w-full bg-blue-700 text-white p-5 rounded-2xl font-black uppercase text-sm">Continue</button>
+        </div>
+    </div>
+
+    <!-- HOME VIEW -->
+    <div id="homeView">
+        <svg id="homeAstraLogo" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L14.85 9.15L22 12L14.85 14.85L12 22L9.15 14.85L2 12L9.15 9.15L12 2Z" fill="url(#astraHomeGrad)"/>
+            <defs><linearGradient id="astraHomeGrad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse"><stop stop-color="#4285F4"/><stop offset="0.5" stop-color="#9B72CB"/><stop offset="1" stop-color="#D96570"/></linearGradient></defs>
+        </svg>
+
+        <div class="tc-top-btn" id="tcBtn" onclick="openTC()">
+            <div class="tc-icon-box"><i data-lucide="info" class="w-6 h-6 text-slate-800"></i></div>
+            <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">Legal</span>
+        </div>
+
+        <div class="home-info-text" id="homeInfo">
+            <h1 class="text-4xl font-black mb-4 tracking-tighter text-slate-800">India Help</h1>
+            <p class="text-sm font-medium text-slate-500 leading-relaxed px-6">Secured Legal Intelligence. Granular Investigation Protocol.</p>
+            <div class="slide-track" id="homeSlider">
+                <div class="slide-text">Slide to start case</div>
+                <div class="slide-handle" id="homeHandle"><i data-lucide="chevron-right" class="w-7 h-7 text-sky-500"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- T&C PAGE -->
+    <div id="tcView">
+        <div class="tc-card">
+            <div class="flex items-center gap-4 mb-6"><i data-lucide="shield-check" class="w-8 h-8 text-blue-800"></i><h2 class="text-2xl font-black">Legal Terms</h2></div>
+            <div class="tc-body no-scrollbar text-gray-600">
+                <p>1. <b>Deep Evidence:</b> Astra requires granular data for successful filing.</p>
+                <p>2. <b>Authenticity:</b> Any false claim under IPC Section 209 is a criminal offense.</p>
+            </div>
+            <button class="back-btn" onclick="closeTC()">Back to Home</button>
+        </div>
+    </div>
+
+    <!-- MAIN AI PORTAL -->
+    <div id="mainPortal" class="no-scrollbar">
+        <header class="ai-header">
+            <div onclick="exitAiMode()" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white cursor-pointer"><i data-lucide="x" class="w-5 h-5"></i></div>
+        </header>
+        <div class="chat-area no-scrollbar" id="chatContainer"></div>
+        <div class="input-bar-wrap">
+            <div id="micBtn" class="mic-btn" onclick="toggleVoiceMode()"><i data-lucide="mic" class="w-5 h-5"></i></div>
+            <input type="text" id="aiInput" placeholder="Describe granular details..." onkeydown="if(event.key === 'Enter') handleChatInput()">
+            <div class="send-btn" onclick="handleChatInput()"><i data-lucide="arrow-up" class="w-5 h-5"></i></div>
+        </div>
+    </div>
+
+    <script>
+        let appState = {
+            user: { name: "", mobile: "" },
+            aiFlow: { active: false, category: '', subStep: 1, subType: '', data: {} },
+            synth: window.speechSynthesis,
+            recognition: null,
+            voiceActive: false
+        };
+
+        lucide.createIcons();
+
+        /* --- SPEECH RECOGNITION --- */
+        if ('webkitSpeechRecognition' in window) {
+            appState.recognition = new webkitSpeechRecognition();
+            appState.recognition.continuous = false;
+            appState.recognition.lang = 'en-IN';
+            appState.recognition.onstart = () => document.getElementById('micBtn').classList.add('active');
+            appState.recognition.onend = () => document.getElementById('micBtn').classList.remove('active');
+            appState.recognition.onresult = (event) => {
+                document.getElementById('aiInput').value = event.results[0][0].transcript;
+                handleChatInput();
+            };
+        }
+
+        function toggleVoiceMode() { if (!appState.recognition) return; appState.voiceActive = true; appState.recognition.start(); }
+
+        /* --- CORE HANDLERS --- */
+        window.onload = () => {
+            setTimeout(() => {
+                document.getElementById('splashScreen').style.opacity = '0';
+                setTimeout(() => { document.getElementById('splashScreen').style.display = 'none'; document.getElementById('authOverlay').style.display = 'flex'; setTimeout(() => document.getElementById('authOverlay').style.opacity = '1', 50); }, 800);
+            }, 3000);
+        };
+
+        function finishOnboarding() {
+            const n = document.getElementById('setupName').value.trim();
+            const m = document.getElementById('setupMobile').value.trim();
+            if(!n || m.length < 10) return;
+            appState.user = { name: n, mobile: m };
+            document.getElementById('authOverlay').style.opacity = '0';
+            setTimeout(() => { document.getElementById('authOverlay').style.display = 'none'; showHomeView(); }, 600);
+        }
+
+        function showHomeView() {
+            document.getElementById('homeView').style.display = 'flex';
+            setTimeout(() => { document.getElementById('homeInfo').classList.add('visible'); document.getElementById('tcBtn').classList.add('visible'); }, 500);
+        }
+
+        function openTC() { document.getElementById('tcView').style.display = 'flex'; document.getElementById('homeView').style.opacity = '0.3'; }
+        function closeTC() { document.getElementById('tcView').style.display = 'none'; document.getElementById('homeView').style.opacity = '1'; }
+
+        function enterAiMode() {
+            const logo = document.getElementById('homeAstraLogo');
+            const sliderTrack = document.getElementById('homeSlider');
+            const home = document.getElementById('homeView');
+            const portal = document.getElementById('mainPortal');
+            
+            logo.classList.add('mix-with-slider');
+            sliderTrack.classList.add('glow');
+            
+            setTimeout(() => {
+                home.style.opacity = '0';
+                setTimeout(() => { home.style.display = 'none'; portal.style.display = 'flex'; setTimeout(() => { portal.style.opacity = '1'; initAiChat(); }, 50); }, 400);
+            }, 800);
+        }
+
+        function exitAiMode() {
+            const handle = document.getElementById('homeHandle');
+            appState.aiFlow = { active: false, category: '', subStep: 1, subType: '', data: {} };
+            appState.voiceActive = false;
+            document.getElementById('mainPortal').style.opacity = '0';
+            
+            // RESET SLIDER POSITION
+            handle.style.transition = 'transform 0.5s var(--elastic)';
+            handle.style.transform = 'translateX(0)';
+
+            setTimeout(() => { document.getElementById('mainPortal').style.display = 'none'; document.getElementById('homeView').style.display = 'flex'; document.getElementById('homeView').style.opacity = '1'; document.getElementById('homeAstraLogo').classList.remove('mix-with-slider'); document.getElementById('homeSlider').classList.remove('glow'); document.getElementById('chatContainer').innerHTML = ""; appState.synth.cancel(); }, 600);
+        }
+
+        /* --- DEEP INVESTIGATION LOGIC --- */
+        async function initAiChat() {
+            appState.aiFlow.active = true;
+            await addAiResponse(`Greetings, ${appState.user.name.split(' ')[0]}. I am Astra Intelligence. Specify category to begin deep documentation: 'Consumer' or 'Cyber'?`);
+        }
+
+        async function addAiResponse(text) {
+            const chat = document.getElementById('chatContainer');
+            const div = document.createElement('div'); div.className = "bubble-ai"; chat.appendChild(div);
+            appState.synth.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US'; utterance.rate = 1.05;
+            utterance.onend = () => { if (appState.voiceActive) setTimeout(() => appState.recognition.start(), 500); };
+            appState.synth.speak(utterance);
+            const words = text.split(" ");
+            for (let i = 0; i < words.length; i++) {
+                div.innerText += words[i] + (i < words.length - 1 ? " " : ""); 
+                chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' });
+                await new Promise(r => setTimeout(r, 130)); 
+            }
+        }
+
+        function handleChatInput() {
+            const input = document.getElementById('aiInput');
+            const val = input.value.trim(); if (!val) return;
+            const chat = document.getElementById('chatContainer');
+            const userDiv = document.createElement('div'); userDiv.className = "bubble-user"; userDiv.innerText = val;
+            chat.appendChild(userDiv); input.value = ""; 
+            chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' });
+            if (appState.aiFlow.active) processDeepInvestigation(val);
+        }
+
+        async function processDeepInvestigation(raw) {
+            const flow = appState.aiFlow; const q = raw.toLowerCase();
+            if (!flow.category) {
+                if (q.includes('consumer')) { flow.category = 'consumer'; await addAiResponse("Consumer Audit active. What is the Product or Service name?"); }
+                else if (q.includes('cyber')) { flow.category = 'cyber'; await addAiResponse("Cyber Forensic active. Is it a 'Money Scam', 'Abuse/Bullying', or 'Child Abuse'?"); }
+                return;
+            }
+            if (flow.category === 'consumer') {
+                switch(flow.subStep) {
+                    case 1: flow.data.product = raw; flow.subStep++; await addAiResponse("Provide the Opposite Party (Company) Name:"); break;
+                    case 2: flow.data.opp = raw; flow.subStep++; await addAiResponse("Provide the Order ID or Invoice Number:"); break;
+                    case 3: flow.data.orderId = raw; flow.subStep++; await addAiResponse("Provide Purchase and Delivery dates:"); break;
+                    case 4: flow.data.dates = raw; flow.subStep++; await addAiResponse("Total Value in Rupees?"); break;
+                    case 5: flow.data.value = raw; flow.subStep++; await addAiResponse("Provide Ticket Number from Customer Care if any:"); break;
+                    case 6: flow.data.ticket = raw; flow.subStep++; await addAiResponse("What relief is sought? (Refund/Replace/Compensation):"); break;
+                    case 7: flow.data.relief = raw; flow.subStep++; await addAiResponse("Describe the deficiency in maximum detail:"); break;
+                    case 8: flow.data.brief = raw; await generateDirectDraft(); break;
+                }
+            } else if (flow.category === 'cyber') {
+                if (!flow.subType) {
+                    if (q.includes('money') || q.includes('scam')) flow.subType = 'financial';
+                    else if (q.includes('abuse') || q.includes('bullying')) flow.subType = 'abuse';
+                    else if (q.includes('child')) flow.subType = 'child_safety';
+                    else return;
+                }
+                if (flow.subType === 'financial') {
+                    switch(flow.subStep) {
+                        case 1: flow.subStep++; await addAiResponse("Provide Txn ID and Scammer's UPI/Bank info:"); break;
+                        case 2: flow.data.txn = raw; flow.subStep++; await addAiResponse("Total loss amount and incident time:"); break;
+                        case 3: flow.data.loss = raw; flow.subStep++; await addAiResponse("Describe the fraud method step-by-step:"); break;
+                        case 4: flow.data.brief = raw; await generateDirectDraft(); break;
+                    }
+                } else if (flow.subType === 'abuse') {
+                    switch(flow.subStep) {
+                        case 1: flow.subStep++; await addAiResponse("Provide the Scammer's Profile Link:"); break;
+                        case 2: flow.data.target = raw; flow.subStep++; await addAiResponse("List the specific abusive words used:"); break;
+                        case 3: flow.data.words = raw; flow.subStep++; await addAiResponse("Briefly describe the context:"); break;
+                        case 4: flow.data.brief = raw; await generateDirectDraft(); break;
+                    }
+                } else if (flow.subType === 'child_safety') {
+                    switch(flow.subStep) {
+                        case 1: flow.subStep++; await addAiResponse("Describe the incident (High Priority):"); break;
+                        case 2: flow.data.brief = raw; await generateDirectDraft(); break;
+                    }
+                }
+            }
+        }
+
+        async function generateDirectDraft() {
+            const flow = appState.aiFlow; const id = "AST-" + Math.floor(100000 + Math.random() * 900000);
+            appState.voiceActive = false;
+            await addAiResponse(`Case captured. Redirecting for direct review...`);
+            setTimeout(() => {
+                const recipient = "consumerhelpsupport@gmail.com";
+                let details = (flow.category === 'consumer') 
+                    ? `PRODUCT: ${flow.data.product}\nOPPONENT: ${flow.data.opp}\nORDER: ${flow.data.orderId}\nRELIEF: ${flow.data.relief}\nISSUE: ${flow.data.brief}`
+                    : `TYPE: ${flow.subType.toUpperCase()}\nTXN/LINK: ${flow.data.txn || flow.data.target}\nLOSS/DETAILS: ${flow.data.loss || flow.data.words}\nBRIEF: ${flow.data.brief}`;
+                const body = `--- DIRECT CASE SUBMISSION ---\nCASE ID: ${id}\nCLIENT: ${appState.user.name}\nMOBILE: ${appState.user.mobile}\n\n${details}`;
+                window.location.href = `mailto:${recipient}?subject=Case ${id}&body=${encodeURIComponent(body)}`;
+            }, 2000);
+        }
+
+        /* --- FIXED SLIDER FUNCTION --- */
+        function setupSlider(handleId, trackId, onComplete) {
+            const h = document.getElementById(handleId); 
+            const t = document.getElementById(trackId);
+            let isD = false, sX = 0;
+            
+            const start = (e) => { 
+                isD = true; 
+                sX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX; 
+                h.style.transition = 'none'; 
+            };
+            
+            const move = (e) => {
+                if (!isD) return;
+                const cX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+                let x = cX - sX;
+                const lim = t.clientWidth - h.clientWidth - 8;
+                
+                if (x < 0) x = 0; 
+                if (x > lim) x = lim; // FIXED: Changed 'limit' to 'lim'
+                
+                h.style.transform = `translateX(${x}px)`;
+                if (x >= lim) { 
+                    isD = false; 
+                    h.style.transform = `translateX(${lim}px)`; 
+                    onComplete(); 
+                }
+            };
+            
+            const end = () => { 
+                if (!isD) return; 
+                isD = false; 
+                h.style.transition = 'transform 0.5s var(--elastic)'; 
+                h.style.transform = 'translateX(0)'; 
+            };
+            
+            h.addEventListener('mousedown', start);
+            window.addEventListener('mousemove', move);
+            window.addEventListener('mouseup', end);
+            
+            h.addEventListener('touchstart', start, {passive: false});
+            window.addEventListener('touchmove', move, {passive: false});
+            window.addEventListener('touchend', end);
+        }
+        setupSlider('homeHandle', 'homeSlider', enterAiMode);
+    </script>
+</body>
+</html>
