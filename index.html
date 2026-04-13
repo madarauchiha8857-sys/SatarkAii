@@ -1,0 +1,480 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ConsumerHelp | Astra v25.0 Deep Forensic</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,700;0,800;1,800&display=swap');
+
+        :root {
+            --bg-dark: #020617;
+            --saffron-main: #FF9933; 
+            --gold-accent: #FFD700;   
+            --glass: rgba(255, 255, 255, 0.06);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --elastic: cubic-bezier(0.68, -0.6, 0.32, 1.6);
+        }
+
+        * { -webkit-tap-highlight-color: transparent; user-select: none; box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg-dark); color: white; overflow: hidden; height: 100vh; width: 100vw; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+
+        /* --- LOGO ANIMATIONS --- */
+        .star-path { fill: url(#globalSwirlGrad); filter: drop-shadow(0 0 15px rgba(255, 153, 51, 0.4)); }
+
+        .speaking-bounce { animation: audioBounce 0.45s infinite alternate ease-in-out !important; }
+        @keyframes audioBounce {
+            from { transform: translate(-50%, -50%) scale(1); }
+            to { transform: translate(-50%, -55%) scale(1.12); }
+        }
+
+        .glow-active { animation: divinePulse 4s infinite alternate ease-in-out; }
+        @keyframes divinePulse {
+            0% { filter: brightness(1) drop-shadow(0 0 10px rgba(255, 215, 0, 0.3)); }
+            100% { filter: brightness(1.2) drop-shadow(0 0 35px rgba(255, 153, 51, 0.6)); }
+        }
+
+        /* --- SPLASH REVEAL --- */
+        #splashScreen { position: fixed; inset: 0; background: #000; z-index: 99000; display: flex; align-items: center; justify-content: center; transition: opacity 0.8s ease; }
+        .reveal-box { display: flex; align-items: center; justify-content: center; }
+        .splash-logo-container { width: 80px; height: 80px; transform: scale(0); opacity: 0; animation: popLogo 0.8s forwards var(--elastic); }
+        .splash-text { overflow: hidden; width: 0; white-space: nowrap; opacity: 0; display: flex; flex-direction: column; animation: slideRight 1s forwards ease-out 0.8s; }
+        .t1 { font-weight: 900; font-size: 1.8rem; color: #fff; letter-spacing: 2px; }
+        .t2 { font-weight: 800; font-size: 0.7rem; color: var(--gold-accent); letter-spacing: 5px; text-transform: uppercase; margin-top: 4px; }
+        @keyframes popLogo { to { transform: scale(1); opacity: 1; } }
+        @keyframes slideRight { to { width: 240px; opacity: 1; margin-left: 20px; } }
+
+        /* --- LOGIN / SIGNUP --- */
+        #authOverlay { position: fixed; inset: 0; background: #000; z-index: 85000; display: none; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.5s ease; }
+        .setup-input { width: 100%; background: #111; border: 1px solid #222; padding: 22px; border-radius: 20px; color: white; font-weight: 800; outline: none; margin-bottom: 15px; }
+
+        /* --- HOME VIEW --- */
+        #homeView { display: none; min-height: 100vh; background: #fefce8; width: 100%; flex-direction: column; align-items: center; justify-content: center; position: relative; transition: opacity 0.6s ease; }
+        
+        .astra-logo-wrap {
+            position: absolute; top: 38%; left: 50%; width: 130px; height: 130px; 
+            transform: translate(-50%, -50%);
+            transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1); 
+            z-index: 200;
+        }
+
+        #homeAstraLogoContainer.mix-with-slider { 
+            top: 75% !important; 
+            transform: translate(-50%, 0) scale(0.1) !important; 
+            filter: blur(15px) brightness(3) saturate(2); 
+            opacity: 0; 
+            transition: all 0.7s cubic-bezier(0.7, 0, 0.3, 1) !important; 
+        }
+
+        .slide-track { 
+            width: 100%; height: 64px; background: #fff; 
+            box-shadow: inset 5px 5px 10px #e2e8f0, inset -2px -2px 5px #ffffff; 
+            border-radius: 32px; position: relative; display: flex; align-items: center; 
+            padding: 4px; margin-top: 40px; overflow: hidden; border: 1px solid rgba(0,0,0,0.05); 
+            z-index: 10;
+        }
+        .slide-handle { 
+            width: 56px; height: 56px; background: #2d3748; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; cursor: grab; 
+            position: absolute; left: 4px; z-index: 30; transition: transform 0.1s linear; 
+            touch-action: none; color: var(--gold-accent); box-shadow: 2px 2px 10px rgba(0,0,0,0.2); 
+        }
+        .slide-text { position: absolute; width:100%; text-align:center; font-weight: 800; font-size:10px; color:#cbd5e1; text-transform:uppercase; letter-spacing: 2px; pointer-events:none; }
+
+        /* --- MAIN AI PORTAL --- */
+        #mainPortal { display: none; min-height: 100vh; flex-direction: column; background: #000; position: fixed; inset: 0; z-index: 70000; opacity: 0; transition: opacity 0.6s ease; }
+        .ai-header-layer { position: absolute; top: 0; left: 0; width: 100%; padding: 25px 24px; display: flex; justify-content: space-between; align-items: center; z-index: 72000; pointer-events: none; }
+        .ai-header-brand { display: flex; align-items: center; gap: 12px; pointer-events: auto; }
+        .ai-header-text { font-weight: 800; font-size: 13px; color: #fff; letter-spacing: 1px; text-transform: uppercase; opacity: 0.8; }
+        .ai-close-btn { pointer-events: auto; width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; }
+
+        /* Top Greeting Section */
+        .portal-greeting { padding: 90px 24px 10px 24px; animation: fadeIn 1s ease; }
+        .ekadashi-wish { font-size: 11px; font-weight: 800; color: var(--gold-accent); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; opacity: 0.9; }
+        .greet-hi { font-size: 32px; font-weight: 500; color: #fff; opacity: 0.9; letter-spacing: -1px; }
+        .greet-msg { font-size: 40px; font-weight: 500; color: #fff; line-height: 1.1; letter-spacing: -1px; margin-top: 5px; opacity: 0.95; }
+
+        .chat-area { flex: 1; padding: 20px 24px 160px 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 24px; scroll-behavior: smooth; }
+        .bubble-ai { background: var(--glass); color: #f1f5f9; font-size: 16px; font-weight: 500; line-height: 1.6; max-width: 88%; padding: 18px 22px; border-radius: 28px; border-bottom-left-radius: 4px; border: 1px solid var(--glass-border); align-self: flex-start; word-wrap: break-word; white-space: pre-wrap; animation: slideUpFade 0.4s ease-out; }
+        .bubble-user { background: var(--saffron-main); color: #fff; padding: 14px 22px; border-radius: 24px; border-bottom-right-radius: 4px; align-self: flex-end; font-weight: 600; font-size: 15px; max-width: 82%; word-wrap: break-word; white-space: pre-wrap; animation: slideUpFade 0.5s var(--elastic); box-shadow: 0 10px 20px rgba(255, 153, 51, 0.2); }
+
+        @keyframes slideUpFade { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .input-bar-container { position: fixed; bottom: 30px; left: 0; width: 100%; padding: 0 20px; z-index: 71000; }
+        .input-bar-wrap { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(40px); border-radius: 35px; padding: 8px; display: flex; align-items: center; border: 1px solid var(--glass-border); box-shadow: 0 25px 60px rgba(0,0,0,0.6); }
+        .input-bar-wrap input { background: transparent; border: none; outline: none; color: white; flex: 1; font-size: 16px; height: 48px; padding-left: 20px; }
+        
+        .mic-btn { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; color: #fff; }
+        .mic-btn.active { background: rgba(255, 153, 51, 0.3); animation: micWave 1.5s infinite; color: var(--saffron-main); }
+        .send-btn { width: 44px; height: 44px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #000; }
+
+        @keyframes micWave { 0% { box-shadow: 0 0 0 0 rgba(255, 153, 51, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(255, 153, 51, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 153, 51, 0); } }
+    </style>
+</head>
+<body class="no-scrollbar">
+
+    <!-- UNIVERSAL DIVINE PRISMATIC GRADIENT -->
+    <svg style="width:0; height:0; position:absolute;">
+        <defs>
+            <linearGradient id="globalSwirlGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#FF9933"> 
+                    <animate attributeName="stop-color" values="#FF9933;#FFD700;#000080;#FFFFFF;#FF9933" dur="5s" repeatCount="indefinite" />
+                </stop>
+                <stop offset="50%" stop-color="#FFD700"> 
+                    <animate attributeName="stop-color" values="#FFD700;#000080;#FFFFFF;#FF9933;#FFD700" dur="5s" repeatCount="indefinite" />
+                </stop>
+                <stop offset="100%" stop-color="#000080"> 
+                    <animate attributeName="stop-color" values="#000080;#FFFFFF;#FF9933;#FFD700;#000080" dur="5s" repeatCount="indefinite" />
+                </stop>
+                <animateTransform attributeName="gradientTransform" type="rotate" from="0 12 12" to="360 12 12" dur="8s" repeatCount="indefinite" />
+            </linearGradient>
+        </defs>
+    </svg>
+
+    <!-- SPLASH SCREEN -->
+    <div id="splashScreen">
+        <div class="reveal-box">
+            <div class="splash-logo-container">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <path class="star-path" d="M12 2L14.85 9.15L22 12L14.85 14.85L12 22L9.15 14.85L2 12L9.15 9.15L12 2Z" />
+                </svg>
+            </div>
+            <div class="splash-text"><span class="t1">ASTRA</span><span class="t2">Intelligence</span></div>
+        </div>
+    </div>
+
+    <!-- LOGIN / SIGNUP -->
+    <div id="authOverlay">
+        <div class="w-full max-w-sm px-8 text-center">
+            <h2 class="text-4xl font-black mb-10 tracking-tight text-white">Login / Signup</h2>
+            <input type="text" id="setupName" placeholder="Full Legal Name" class="setup-input">
+            <input type="tel" id="setupMobile" placeholder="10-Digit Mobile Number" class="setup-input">
+            <button onclick="finishOnboarding()" class="w-full bg-orange-500 p-5 rounded-2xl font-black uppercase text-sm tracking-widest mt-4 text-white">Initiate Node</button>
+        </div>
+    </div>
+
+    <!-- HOME VIEW -->
+    <div id="homeView">
+        <div id="homeAstraLogoContainer" class="astra-logo-wrap">
+            <svg viewBox="0 0 24 24" fill="none">
+                <path class="star-path" d="M12 2L14.85 9.15L22 12L14.85 14.85L12 22L9.15 14.85L2 12L9.15 9.15L12 2Z" />
+            </svg>
+        </div>
+        <div class="text-center mt-[250px] px-8">
+            <h1 class="text-5xl font-black mb-2 text-slate-900 tracking-tighter">India Help</h1>
+            <p class="text-[10px] font-black text-orange-600 uppercase tracking-[0.2em] opacity-80 mb-12">Forensic Intelligence Node</p>
+            
+            <div class="slide-track" id="homeSlider">
+                <div class="slide-text">Slide to start case</div>
+                <div class="slide-handle" id="homeHandle"><i data-lucide="chevron-right" class="w-7 h-7"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN AI PORTAL -->
+    <div id="mainPortal" class="no-scrollbar">
+        <div class="ai-header-layer">
+            <div class="ai-header-brand">
+                <div style="width:28px; height:28px;">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path class="star-path" d="M12 2L14.85 9.15L22 12L14.85 14.85L12 22L9.15 14.85L2 12L9.15 9.15L12 2Z" />
+                    </svg>
+                </div>
+                <span class="ai-header-text">Astra Intelligence</span>
+            </div>
+            <div onclick="exitAiMode()" class="ai-close-btn cursor-pointer transition-colors hover:bg-white/20"><i data-lucide="x" class="w-5 h-5 text-white"></i></div>
+        </div>
+
+        <!-- DIVINE GREETING AT TOP -->
+        <div class="portal-greeting" id="portalGreet">
+            <p class="ekadashi-wish">Shubh Varuthini Ekadashi 🙏</p>
+            <h2 class="greet-hi" id="greetText">Hi, User</h2>
+            <h1 class="greet-msg">Where should we start?</h1>
+        </div>
+
+        <div class="chat-area no-scrollbar" id="chatContainer"></div>
+
+        <div class="input-bar-container">
+            <div class="input-bar-wrap">
+                <div id="micBtn" class="mic-btn" onclick="toggleVoiceMode()"><i data-lucide="mic" class="w-5 h-5"></i></div>
+                <input type="text" id="aiInput" placeholder="Specify forensic details..." onkeydown="if(event.key === 'Enter') handleChatInput()">
+                <div class="send-btn" onclick="handleChatInput()"><i data-lucide="arrow-up" class="w-5 h-5"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let appState = {
+            user: { name: "", mobile: "" },
+            aiFlow: { active: false, category: '', subStep: 1, subType: '', data: {} },
+            synth: window.speechSynthesis,
+            recognition: null,
+            voiceActive: false,
+            femaleVoice: null
+        };
+
+        lucide.createIcons();
+
+        /* --- SPEECH LOGIC --- */
+        function initVoices() {
+            const voices = appState.synth.getVoices();
+            appState.femaleVoice = voices.find(v => (v.name.includes('Female') || v.name.includes('Samantha') || v.name.includes('Zira') || v.name.includes('Google India')) && (v.lang.startsWith('en') || v.lang.startsWith('hi')));
+            if (!appState.femaleVoice) appState.femaleVoice = voices.find(v => v.name.includes('Female'));
+        }
+        if (speechSynthesis.onvoiceschanged !== undefined) { speechSynthesis.onvoiceschanged = initVoices; }
+
+        function cleanForSpeech(text) {
+            return text.replace(/IPC 209/g, "Indian Penal Code section two hundred and nine")
+                       .replace(/₹/g, "rupees").replace(/Txn/g, "Transaction").replace(/ID/g, "I D")
+                       .replace(/INR/g, "rupees").replace(/UPI/g, "U P I");
+        }
+
+        function speakText(text, targetLogoId = 'homeAstraLogoContainer') {
+            appState.synth.cancel();
+            const logo = document.getElementById(targetLogoId);
+            const utterance = new SpeechSynthesisUtterance(cleanForSpeech(text));
+            if (appState.femaleVoice) utterance.voice = appState.femaleVoice;
+            utterance.lang = 'en-US'; utterance.rate = 0.95; utterance.pitch = 1.1;
+            
+            utterance.onstart = () => { if(logo) logo.classList.add('speaking-bounce'); };
+            utterance.onend = () => { 
+                if(logo) logo.classList.remove('speaking-bounce');
+                if (appState.voiceActive) setTimeout(() => appState.recognition.start(), 600); 
+            };
+            appState.synth.speak(utterance);
+        }
+
+        /* --- RECOGNITION --- */
+        if ('webkitSpeechRecognition' in window) {
+            appState.recognition = new webkitSpeechRecognition();
+            appState.recognition.continuous = false;
+            appState.recognition.lang = 'en-IN';
+            appState.recognition.onstart = () => document.getElementById('micBtn').classList.add('active');
+            appState.recognition.onend = () => document.getElementById('micBtn').classList.remove('active');
+            appState.recognition.onresult = (event) => {
+                document.getElementById('aiInput').value = event.results[0][0].transcript;
+                handleChatInput();
+            };
+        }
+
+        function toggleVoiceMode() { 
+            if (!appState.recognition) return; 
+            if(appState.voiceActive) { appState.voiceActive = false; appState.recognition.stop(); } 
+            else { appState.voiceActive = true; appState.recognition.start(); }
+        }
+
+        /* --- CORE HANDLERS --- */
+        window.onload = () => {
+            initVoices();
+            setTimeout(() => {
+                document.getElementById('splashScreen').style.opacity = '0';
+                setTimeout(() => { 
+                    document.getElementById('splashScreen').style.display = 'none'; 
+                    document.getElementById('authOverlay').style.display = 'flex'; 
+                    setTimeout(() => document.getElementById('authOverlay').style.opacity = '1', 50); 
+                }, 800);
+            }, 3000);
+        };
+
+        function finishOnboarding() {
+            const n = document.getElementById('setupName').value.trim();
+            const m = document.getElementById('setupMobile').value.trim();
+            if(!n || m.length < 10) return;
+            appState.user = { name: n, mobile: m };
+            document.getElementById('greetText').innerText = "Hi, " + n.split(' ')[0];
+            document.getElementById('authOverlay').style.opacity = '0';
+            setTimeout(() => { document.getElementById('authOverlay').style.display = 'none'; showHomeView(); }, 600);
+        }
+
+        function showHomeView() {
+            document.getElementById('homeView').style.display = 'flex';
+            const logo = document.getElementById('homeAstraLogoContainer');
+            logo.classList.add('glow-active');
+            const text = `Welcome to India Help, ${appState.user.name.split(' ')[0]}. I am Astra, your Forensic Intelligence assistant. This node provides advanced legal drafting for Consumer grievances and Cyber crimes. Please note: providing false legal information is a criminal offense under IPC Section 209. By sliding the handle below, you initiate an active investigation node.`;
+            speakText(text, 'homeAstraLogoContainer');
+        }
+
+        function enterAiMode() {
+            const logo = document.getElementById('homeAstraLogoContainer');
+            logo.classList.remove('glow-active', 'speaking-bounce');
+            logo.classList.add('mix-with-slider');
+            
+            setTimeout(() => {
+                document.getElementById('homeView').style.opacity = '0';
+                setTimeout(() => { 
+                    document.getElementById('homeView').style.display = 'none'; 
+                    document.getElementById('mainPortal').style.display = 'flex'; 
+                    setTimeout(() => { document.getElementById('mainPortal').style.opacity = '1'; initAiChat(); }, 50); 
+                }, 400);
+            }, 700);
+        }
+
+        function exitAiMode() {
+            const handle = document.getElementById('homeHandle');
+            appState.aiFlow = { active: false, category: '', subStep: 1, subType: '', data: {} };
+            appState.voiceActive = false;
+            document.getElementById('mainPortal').style.opacity = '0';
+            handle.style.transition = 'transform 0.5s var(--elastic)';
+            handle.style.transform = 'translateX(0)';
+            setTimeout(() => { 
+                document.getElementById('mainPortal').style.display = 'none'; 
+                document.getElementById('homeView').style.display = 'flex'; 
+                document.getElementById('homeView').style.opacity = '1'; 
+                document.getElementById('homeAstraLogoContainer').classList.remove('mix-with-slider'); 
+                document.getElementById('homeAstraLogoContainer').classList.add('glow-active');
+                document.getElementById('chatContainer').innerHTML = ""; 
+                document.getElementById('portalGreet').style.display = "block";
+                appState.synth.cancel(); 
+            }, 600);
+        }
+
+        /* --- DEEP FORENSIC AI LOGIC --- */
+        async function initAiChat() {
+            appState.aiFlow.active = true;
+            await addAiResponse(`Greetings, ${appState.user.name.split(' ')[0]}. Forensic Node active. To initiate deep documentation, specify the category: 'Consumer' or 'Cyber'?`);
+        }
+
+        async function addAiResponse(text) {
+            const chat = document.getElementById('chatContainer');
+            const div = document.createElement('div'); div.className = "bubble-ai"; chat.appendChild(div);
+            speakText(text, null);
+            const words = text.split(" ");
+            for (let i = 0; i < words.length; i++) {
+                div.innerText += words[i] + (i < words.length - 1 ? " " : ""); 
+                chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' });
+                await new Promise(r => setTimeout(r, 100)); 
+            }
+        }
+
+        function handleChatInput() {
+            const input = document.getElementById('aiInput');
+            const val = input.value.trim(); if (!val) return;
+            document.getElementById('portalGreet').style.display = "none";
+            const chat = document.getElementById('chatContainer');
+            const userDiv = document.createElement('div'); userDiv.className = "bubble-user"; userDiv.innerText = val;
+            chat.appendChild(userDiv); input.value = ""; 
+            chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' });
+            if (appState.aiFlow.active) processDeepInvestigation(val);
+        }
+
+        async function processDeepInvestigation(raw) {
+            const flow = appState.aiFlow; const q = raw.toLowerCase();
+            
+            // Category Selection
+            if (!flow.category) {
+                if (q.includes('consumer')) { 
+                    flow.category = 'consumer'; 
+                    await addAiResponse("Consumer Audit Node Active. What is the exact Name of the Product or Service?"); 
+                } else if (q.includes('cyber')) { 
+                    flow.category = 'cyber'; 
+                    await addAiResponse("Cyber Forensic Node Active. Specify incident type: 'Money Scam', 'Abuse/Bullying', 'Account Hack', or 'Child Safety'?"); 
+                }
+                return;
+            }
+
+            // --- ADVANCED CONSUMER BRANCH ---
+            if (flow.category === 'consumer') {
+                switch(flow.subStep) {
+                    case 1: flow.data.product = raw; flow.subStep++; await addAiResponse("Provide the Opposite Party (Exact Company Name):"); break;
+                    case 2: flow.data.opp = raw; flow.subStep++; await addAiResponse("Provide the Order ID or Invoice Number:"); break;
+                    case 3: flow.data.orderId = raw; flow.subStep++; await addAiResponse("Date of Purchase and Date of Incident:"); break;
+                    case 4: flow.data.dates = raw; flow.subStep++; await addAiResponse("Total Invoice Value in Rupees?"); break;
+                    case 5: flow.data.value = raw; flow.subStep++; await addAiResponse("Specify relief sought: 'Refund', 'Replacement', or 'Compensation'?"); break;
+                    case 6: 
+                        flow.data.relief = raw; 
+                        if (raw.toLowerCase().includes('compensation')) { 
+                            flow.subStep++; 
+                            await addAiResponse("Exactly how much amount in Rupees do you seek? (Specify Mental Agony + Legal Charges):"); 
+                        } else { 
+                            flow.subStep += 2; 
+                            await addAiResponse("Describe the deficiency in service in maximum detail for the court draft:"); 
+                        }
+                        break;
+                    case 7: flow.data.compAmount = raw; flow.subStep++; await addAiResponse("Describe the deficiency in service in maximum detail:"); break;
+                    case 8: flow.data.brief = raw; await generateDirectDraft(); break;
+                }
+            } 
+            // --- ADVANCED CYBER BRANCH ---
+            else if (flow.category === 'cyber') {
+                if (!flow.subType) {
+                    if (q.includes('money') || q.includes('scam')) flow.subType = 'financial';
+                    else if (q.includes('abuse') || q.includes('bully')) flow.subType = 'abuse';
+                    else if (q.includes('hack') || q.includes('account')) flow.subType = 'id_theft';
+                    else if (q.includes('child')) flow.subType = 'child_safety';
+                    else return;
+                    flow.subStep = 1;
+                }
+
+                if (flow.subType === 'financial') {
+                    switch(flow.subStep) {
+                        case 1: flow.subStep++; await addAiResponse("Provide Transaction ID and Fraudster's UPI or Bank Details:"); break;
+                        case 2: flow.data.txn = raw; flow.subStep++; await addAiResponse("Total amount lost and exact date-time of fraud:"); break;
+                        case 3: flow.data.loss = raw; flow.subStep++; await addAiResponse("Fraud method? (OTP share, Link click, OLX scam, or Screen share app?):"); break;
+                        case 4: flow.data.method = raw; flow.subStep++; await addAiResponse("Provide your Bank/Wallet name where money was deducted:"); break;
+                        case 5: flow.data.bank = raw; await generateDirectDraft(); break;
+                    }
+                } else if (flow.subType === 'abuse') {
+                    switch(flow.subStep) {
+                        case 1: flow.subStep++; await addAiResponse("Specify platform (Instagram/FB/WhatsApp) and Scammer's Profile Link:"); break;
+                        case 2: flow.data.handle = raw; flow.subStep++; await addAiResponse("Mention specific abusive words or threats used:"); break;
+                        case 3: flow.data.words = raw; flow.subStep++; await addAiResponse("Harassment ki duration kya hai? (Kabse ho raha hai?):"); break;
+                        case 4: flow.data.brief = raw; await generateDirectDraft(); break;
+                    }
+                } else if (flow.subType === 'id_theft') {
+                    switch(flow.subStep) {
+                        case 1: flow.subStep++; await addAiResponse("Kaunsa account hack hua hai? (Gmail/Insta/Bank login):"); break;
+                        case 2: flow.data.acc = raw; flow.subStep++; await addAiResponse("Kab access gaya aur kya hacker paise maang raha hai?"); break;
+                        case 3: flow.data.brief = raw; await generateDirectDraft(); break;
+                    }
+                } else if (flow.subType === 'child_safety') {
+                    switch(flow.subStep) {
+                        case 1: flow.subStep++; await addAiResponse("Describe the incident nature immediately. (Nature, Platform, Scammer details):"); break;
+                        case 2: flow.data.brief = raw; await generateDirectDraft(); break;
+                    }
+                }
+            }
+        }
+
+        async function generateDirectDraft() {
+            const flow = appState.aiFlow; const id = "AST-" + Math.floor(100000 + Math.random() * 900000);
+            appState.voiceActive = false;
+            await addAiResponse(`Forensic Case captured under ID ${id}. Redirecting to Pune HUB review...`);
+            setTimeout(() => {
+                const recipient = "consumerhelpsupport@gmail.com";
+                let details = `ID: ${id}\nCATEGORY: ${flow.category}\nTYPE: ${flow.subType || 'N/A'}\nDATA: ${JSON.stringify(flow.data)}`;
+                const body = `--- DEEP FORENSIC CASE SUBMISSION ---\n\n${details}`;
+                window.location.href = `mailto:${recipient}?subject=Forensic Case ID ${id}&body=${encodeURIComponent(body)}`;
+            }, 3000);
+        }
+
+        /* --- SLIDER LOGIC --- */
+        function setupSlider(handleId, trackId, onComplete) {
+            const h = document.getElementById(handleId); const t = document.getElementById(trackId);
+            let isD = false, sX = 0;
+            const start = (e) => { isD = true; sX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX; h.style.transition = 'none'; };
+            const move = (e) => {
+                if (!isD) return;
+                if (e.type === 'touchmove') e.preventDefault();
+                const cX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+                let x = cX - sX;
+                const lim = t.clientWidth - h.clientWidth - 8;
+                if (x < 0) x = 0; if (x > lim) x = lim;
+                h.style.transform = `translateX(${x}px)`;
+                if (x >= lim) { isD = false; h.style.transform = `translateX(${lim}px)`; onComplete(); }
+            };
+            const end = () => { if (!isD) return; isD = false; h.style.transition = 'transform 0.5s var(--elastic)'; h.style.transform = 'translateX(0)'; };
+            h.addEventListener('mousedown', start); window.addEventListener('mousemove', move); window.addEventListener('mouseup', end);
+            h.addEventListener('touchstart', start, {passive: false}); window.addEventListener('touchmove', move, {passive: false}); window.addEventListener('touchend', end);
+        }
+        setupSlider('homeHandle', 'homeSlider', enterAiMode);
+    </script>
+</body>
+</html>
+
+
