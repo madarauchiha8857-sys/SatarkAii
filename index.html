@@ -1,0 +1,440 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Astra v25.0 | Astra Intelligence</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+        :root {
+            --bg-dark: #000000;
+            --purple-main: #a855f7;
+            --orange-main: #f97316;
+            --blue-glow: #3b82f6;
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --slider-bg: #ffffff;
+            --slider-handle: #2d3748;
+            --slider-icon: #facc15;
+            --slider-text: #bdc3c7;
+        }
+
+        * { -webkit-tap-highlight-color: transparent; user-select: none; box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg-dark); color: white; overflow: hidden; height: 100vh; width: 100vw; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+
+        /* --- Global Background Glow --- */
+        .glow-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 20% 20%, rgba(168, 85, 247, 0.1) 0%, transparent 40%), radial-gradient(circle at 80% 80%, rgba(249, 115, 22, 0.08) 0%, transparent 40%);
+            z-index: -1; pointer-events: none;
+        }
+
+        /* --- PURPLE & ORANGE TEXT FLOW --- */
+        @keyframes colorFlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .astra-logo-text {
+            background: linear-gradient(90deg, var(--purple-main), var(--orange-main), var(--purple-main));
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: colorFlow 4s ease infinite;
+            display: inline-block;
+        }
+
+        /* --- UPDATED LIQUID OPENING (CENTERED & COMPACT) --- */
+        @keyframes liquidLogoSwell {
+            0% { opacity: 0; transform: scale(0); filter: blur(20px); }
+            50% { transform: scale(1.1); filter: blur(5px); }
+            100% { opacity: 1; transform: scale(0.7); filter: blur(0px); }
+        }
+
+        @keyframes splashVibrate {
+            0%, 100% { transform: scale(0.7) translate(0, 0); }
+            25% { transform: scale(0.7) translate(-3px, 3px); }
+            50% { transform: scale(0.7) translate(3px, -3px); }
+            75% { transform: scale(0.7) translate(-3px, -3px); }
+        }
+
+        @keyframes astraLiquidSlide {
+            0% { opacity: 0; transform: translateX(20px) scaleX(1.3); filter: blur(10px); }
+            100% { opacity: 1; transform: translateX(0) scaleX(1); filter: blur(0px); }
+        }
+
+        @keyframes intelLiquidSlide {
+            0% { opacity: 0; transform: translateX(-20px) scaleX(1.3); filter: blur(10px); }
+            100% { opacity: 1; transform: translateX(0) scaleX(1); filter: blur(0px); }
+        }
+
+        .splash-container { 
+            position: fixed; 
+            inset: 0; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            background: black; 
+            z-index: 300; 
+            overflow: hidden; 
+        }
+
+        .splash-logo { 
+            animation: liquidLogoSwell 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+            flex-shrink: 0; 
+            z-index: 20; 
+            width: 120px; 
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .is-vibrating-start { animation: splashVibrate 0.3s linear 1.5s; }
+        .is-vibrating-end { animation: splashVibrate 0.3s linear 2.8s; }
+
+        .astra-part { 
+            opacity: 0; 
+            font-size: clamp(0.9rem, 4vw, 1.2rem); 
+            font-weight: 900; 
+            margin-right: -15px; /* Text logo ke kareeb lane ke liye */
+            animation: astraLiquidSlide 0.8s cubic-bezier(0.16, 1, 0.3, 1) 1.8s forwards; 
+            letter-spacing: 0.1em; 
+            z-index: 10;
+        }
+
+        .intel-part { 
+            opacity: 0; 
+            font-size: clamp(0.9rem, 4vw, 1.2rem); 
+            font-weight: 900; 
+            margin-left: -15px; /* Text logo ke kareeb lane ke liye */
+            animation: intelLiquidSlide 0.8s cubic-bezier(0.16, 1, 0.3, 1) 3.1s forwards; 
+            letter-spacing: 0.1em; 
+            z-index: 10;
+        }
+
+        /* --- Energy Halo & Logo UI --- */
+        .logo-wrapper { position: relative; width: 140px; height: 140px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .logo-main, .logo-copy { position: absolute; width: 110px; height: 110px; transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+        .logo-copy { opacity: 0; pointer-events: none; transform: scale(0.5); }
+        .is-shaking .logo-main { animation: splashVibrate 0.2s infinite linear; }
+        .is-split .logo-main { transform: translateX(-40px) scale(0.8); }
+        .is-split .logo-copy { opacity: 1; transform: translateX(40px) scale(0.8); }
+        
+        .energy-halo { position: absolute; width: 120px; height: 120px; border-radius: 50%; border: 2px solid transparent; border-top-color: var(--purple-main); border-bottom-color: var(--orange-main); opacity: 0; transform: scale(0.8); transition: all 0.5s ease; }
+        .is-speaking .energy-halo { opacity: 1; transform: scale(1.2); animation: haloSpin 2s linear infinite; box-shadow: 0 0 30px rgba(168, 85, 247, 0.4); }
+        .energy-halo.pulse { transform: scale(1.4); box-shadow: 0 0 50px var(--orange-main); border-width: 4px; }
+        @keyframes haloSpin { from { transform: rotate(0deg) scale(1.2); } to { transform: rotate(360deg) scale(1.2); } }
+
+        #speechDisplay { position: absolute; top: -110px; left: 50%; transform: translateX(-50%); width: 88vw; max-width: 400px; text-align: center; font-size: 0.95rem; font-weight: 800; color: white; opacity: 0; transition: all 0.4s ease; z-index: 200; text-shadow: 0 0 10px rgba(0,0,0,1); background: rgba(0,0,0,0.4); padding: 12px; border-radius: 20px; backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .is-speaking #speechDisplay { opacity: 1; transform: translateX(-50%) translateY(-10px); }
+
+        /* --- Springy Slider --- */
+        .slider-container { width: 100%; max-width: 240px; margin: 0 auto; }
+        .slider-track { background: var(--slider-bg); border-radius: 50px; height: 50px; position: relative; overflow: hidden; box-shadow: 0 15px 30px rgba(0,0,0,0.4); }
+        .slider-handle { width: 42px; height: 42px; background: var(--slider-handle); border-radius: 50%; display: flex; align-items: center; justify-content: center; position: absolute; left: 4px; top: 4px; color: var(--slider-icon); cursor: grab; z-index: 10; transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .slider-text { position: absolute; width: 100%; text-align: center; line-height: 50px; font-size: 8px; font-weight: 900; color: #95a5a6; text-transform: uppercase; letter-spacing: 2px; pointer-events: none; }
+
+        /* --- Input & Panels --- */
+        .input-wrap { position: relative; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 10px 18px; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .chat-portal-glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(40px); border-radius: 40px 40px 0 0; border: 1px solid rgba(255, 255, 255, 0.05); margin: 0 10px; flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .ai-bubble { background: rgba(255, 255, 255, 0.06); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 28px 28px 28px 8px; padding: 16px 20px; font-size: 13px; line-height: 1.6; max-width: 90%; }
+        .user-bubble { background: linear-gradient(135deg, var(--purple-main), #6b21a8); border-radius: 24px 28px 8px 28px; padding: 16px 24px; max-width: 82%; font-weight: 700; font-size: 13px; }
+
+        .upload-btn { background: rgba(168, 85, 247, 0.15); border: 1px dashed var(--purple-main); color: var(--purple-main); padding: 12px; border-radius: 15px; font-size: 10px; font-weight: 700; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 10px; width: 100%; cursor: pointer; transition: 0.3s; }
+        .upload-btn:active { background: var(--purple-main); color: white; transform: scale(0.98); }
+
+        section { transition: opacity 0.8s ease, transform 0.8s ease; }
+        .section-hidden { display: none !important; opacity: 0; pointer-events: none; }
+        @keyframes liquidWordIn { 0% { opacity: 0; filter: blur(10px); transform: scale(0.8); } 100% { opacity: 1; filter: blur(0px); transform: scale(1); } }
+        .word-token { display: inline-block; margin-right: 5px; animation: liquidWordIn 0.5s ease-out forwards; }
+    </style>
+</head>
+<body>
+
+    <div class="glow-bg"></div>
+
+    <svg style="width:0; height:0; position:absolute;">
+        <defs>
+            <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#ff7eb3" />
+                <stop offset="50%" stop-color="#8e54e9" />
+                <stop offset="100%" stop-color="#4776e6" />
+            </linearGradient>
+        </defs>
+    </svg>
+
+    <!-- 1. SPLASH (CENTERED & COMPACT) -->
+    <section id="splash" class="splash-container">
+        <h1 class="astra-part astra-logo-text">ASTRA</h1>
+        <div class="splash-logo is-vibrating-start is-vibrating-end">
+            <svg class="w-20 h-20" viewBox="0 0 200 200" fill="none">
+                <rect x="50" y="50" width="100" height="100" rx="20" transform="rotate(45 100 100)" fill="url(#logoGrad)" fill-opacity="0.3" stroke="white" stroke-width="1" />
+                <rect x="60" y="60" width="80" height="80" rx="18" transform="rotate(45 100 100)" fill="url(#logoGrad)" stroke="white" stroke-width="1.5" />
+            </svg>
+        </div>
+        <h1 class="intel-part astra-logo-text">INTELLIGENCE</h1>
+    </section>
+
+    <!-- 2. LOGIN -->
+    <section id="onboarding" class="section-hidden fixed inset-0 flex flex-col items-center justify-center px-6 z-[200]">
+        <div class="w-full max-w-sm flex flex-col items-center">
+            <div class="mb-10 text-center"><h2 class="text-2xl font-black tracking-tighter mb-1 astra-logo-text">Astra Intelligence</h2><p class="text-white/30 text-[9px] uppercase font-bold tracking-[0.3em]">Initialize Secure Session</p></div>
+            <div class="w-full space-y-4">
+                <div class="input-wrap"><label class="block text-[8px] uppercase font-black text-orange-500/60 tracking-widest mb-1 ml-1">Login Name</label><input type="text" id="userName" placeholder="Full Legal Name" class="w-full bg-transparent border-none outline-none text-[14px] font-semibold text-white"></div>
+                <div class="input-wrap"><label class="block text-[8px] uppercase font-black text-purple-400/60 tracking-widest mb-1 ml-1">Secure Contact</label><input type="tel" id="userMobile" placeholder="+91 ••••• •••••" class="w-full bg-transparent border-none outline-none text-[14px] font-semibold text-white"></div>
+                <button onclick="handleLogin()" class="w-full p-5 rounded-[20px] bg-white text-black font-black uppercase text-[10px] tracking-[0.3em] mt-4 active:scale-95 transition-transform">Connect Portal</button>
+            </div>
+            <div class="mt-12 opacity-20 text-[8px] font-bold uppercase tracking-[0.5em]">Subject to IPC Section 209</div>
+        </div>
+    </section>
+
+    <!-- 3. HOME -->
+    <section id="home" class="section-hidden fixed inset-0 flex flex-col items-center justify-center p-8 bg-black z-[150]">
+        <div class="flex-1 flex flex-col items-center justify-center w-full relative">
+            <div id="speechDisplay"></div>
+            <div class="logo-wrapper mb-10" id="logoBox" onclick="vibrateAndSplit()">
+                <div class="energy-halo" id="halo"></div>
+                <svg class="logo-main" viewBox="0 0 200 200"><rect x="50" y="50" width="100" height="100" rx="20" transform="rotate(45 100 100)" fill="url(#logoGrad)" fill-opacity="0.3" stroke="white" stroke-width="1" /><rect x="60" y="60" width="80" height="80" rx="18" transform="rotate(45 100 100)" fill="url(#logoGrad)" stroke="white" stroke-width="1.5" /></svg>
+                <svg class="logo-copy" viewBox="0 0 200 200"><rect x="50" y="50" width="100" height="100" rx="20" transform="rotate(45 100 100)" fill="url(#logoGrad)" fill-opacity="0.3" stroke="white" stroke-width="1" /><rect x="60" y="60" width="80" height="80" rx="18" transform="rotate(45 100 100)" fill="url(#logoGrad)" stroke="white" stroke-width="1.5" /></svg>
+            </div>
+            <h1 class="text-3xl font-black tracking-tighter mb-1 astra-logo-text">Astra Intelligence</h1>
+            <p class="text-orange-500 font-bold text-[9px] uppercase tracking-[0.5em] opacity-80 mb-16">Secure Portal</p>
+            <div class="slider-container">
+                <div class="slider-track" id="homeTrack"><div class="slider-text">Slide to start case</div><div class="slider-handle" id="homeHandle"><i data-lucide="chevron-right" class="w-7 h-7"></i></div></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. CHAT PORTAL -->
+    <section id="portal" class="section-hidden fixed inset-0 flex flex-col bg-black z-[250]">
+        <div class="p-8 pb-4 flex justify-between items-center bg-transparent border-none">
+            <h3 class="text-sm font-black tracking-tight astra-logo-text">Astra Intelligence</h3>
+            <button onclick="goBack()" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center transition-all"><i data-lucide="x" class="w-5 h-5 text-white/70"></i></button>
+        </div>
+        <div class="chat-portal-glass">
+            <div id="chatBox" class="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar"></div>
+            <div class="p-6">
+                <div class="bg-white/5 border border-white/10 rounded-[24px] p-2 flex items-center gap-4">
+                    <input type="text" id="userInput" placeholder="" class="flex-1 bg-transparent border-none outline-none text-[15px] p-2 text-white">
+                    <button onclick="sendMessage()" class="w-10 h-10 bg-white rounded-[16px] flex items-center justify-center text-black active:scale-90 transition-transform"><i data-lucide="arrow-up-right" class="w-5 h-5"></i></button>
+                </div>
+                <input type="file" id="fileInput" class="hidden" multiple onchange="handleFileUpload(event)">
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. DRAFT -->
+    <section id="draftView" class="section-hidden fixed inset-0 bg-black z-[400] flex flex-col p-8 overflow-y-auto no-scrollbar">
+        <h2 class="text-2xl font-black mb-6">Case Briefing</h2>
+        <div id="draftContent" class="bg-white/5 border border-white/10 p-6 rounded-[24px] text-white/80 font-serif text-xs leading-relaxed mb-10 whitespace-pre-wrap"></div>
+        <div class="slider-container mb-12">
+            <div class="slider-track" id="submitTrack"><div class="slider-text">Slide to Dispatch</div><div class="slider-handle" id="submitHandle"><i data-lucide="send" class="w-5 h-5"></i></div></div>
+        </div>
+    </section>
+
+    <script>
+        let user = { name: '', mobile: '', uid: 'AST-' + Math.floor(Math.random() * 900000 + 100000) };
+        let currentStep = 'category';
+        let caseData = { files: [] };
+        const sleep = ms => new Promise(res => setTimeout(res, ms));
+
+        function showSection(id) {
+            const sections = ['splash', 'onboarding', 'home', 'portal', 'draftView'];
+            sections.forEach(s => {
+                const el = document.getElementById(s);
+                if (s === id) { el.classList.remove('section-hidden'); el.style.display = (['portal', 'onboarding', 'home', 'splash'].includes(s)) ? 'flex' : 'block'; }
+                else { el.classList.add('section-hidden'); el.style.display = 'none'; }
+            });
+        }
+
+        function goBack() { 
+            showSection('home'); currentStep = 'category'; caseData = { files: [] }; document.getElementById('chatBox').innerHTML = ''; 
+            if(window.speechSynthesis) window.speechSynthesis.cancel(); 
+            document.body.classList.remove('is-speaking'); 
+            resetSlider('homeHandle');
+        }
+
+        function resetSlider(handleId) {
+            const h = document.getElementById(handleId);
+            if(h) { h.style.transition = 'transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)'; h.style.transform = 'translateX(0px) scale(1)'; }
+        }
+
+        window.onload = () => { lucide.createIcons(); setTimeout(() => showSection('onboarding'), 6000); setupSlider('homeHandle', 'homeTrack', engagePortal); setupSlider('submitHandle', 'submitTrack', submitCase); };
+
+        function vibrateAndSplit() {
+            const box = document.getElementById('logoBox');
+            box.classList.add('is-shaking');
+            setTimeout(() => { box.classList.remove('is-shaking'); box.classList.add('is-split'); setTimeout(() => box.classList.remove('is-split'), 2500); }, 500);
+        }
+
+        function handleLogin() {
+            const name = document.getElementById('userName').value.trim();
+            if (name) { user.name = name; showSection('home'); speak(`Hello ${user.name}. Welcome to Astra Intelligence. Please note: Submitting a false legal complaint is a criminal offense under IPC Section 209. Proceed with integrity.`); }
+        }
+
+        function setupSlider(handleId, trackId, onComplete) {
+            const handle = document.getElementById(handleId), track = document.getElementById(trackId);
+            let isDragging = false, startX = 0;
+            const getX = (e) => (e.touches ? e.touches[0].clientX : e.clientX);
+            const onStart = (e) => { isDragging = true; startX = getX(e); handle.style.transition = 'none'; };
+            const onMove = (e) => {
+                if (!isDragging) return;
+                let delta = getX(e) - startX;
+                const max = track.offsetWidth - handle.offsetWidth - 8;
+                if (delta < 0) delta = 0; if (delta > max) delta = max;
+                let stretch = 1 + (delta / max) * 0.15;
+                handle.style.transform = `translateX(${delta}px) scale(${stretch}, ${1 - (delta / max) * 0.1})`;
+                if (delta >= max) { isDragging = false; handle.style.transform = `translateX(${max}px) scale(1.1)`; onComplete(); }
+            };
+            const onEnd = () => { if (!isDragging) return; isDragging = false; handle.style.transition = 'transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.4)'; handle.style.transform = 'translateX(0px) scale(1)'; };
+            handle.addEventListener('mousedown', onStart); window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', onEnd);
+            handle.addEventListener('touchstart', (e) => onStart(e), {passive: true}); window.addEventListener('touchmove', (e) => { if(isDragging) onMove(e); }, {passive: false}); window.addEventListener('touchend', onEnd);
+        }
+
+        function engagePortal() { showSection('portal'); addMessage('ai', `Welcome ${user.name}, Astra Intelligence session initialized. Please select the sector for investigation: [Consumer] or [Cyber]?`); }
+
+        async function addMessage(sender, text, showUpload = false) {
+            const chatBox = document.getElementById('chatBox');
+            const bubble = document.createElement('div');
+            bubble.className = sender === 'ai' ? 'ai-bubble' : 'user-bubble ml-auto';
+            chatBox.appendChild(bubble);
+            if (sender === 'ai') {
+                const words = text.split(/\s+/);
+                for (let word of words) {
+                    const span = document.createElement('span'); span.className = 'word-token'; span.innerText = word + ' ';
+                    bubble.appendChild(span); chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' }); await sleep(70);
+                }
+                if(showUpload) {
+                    const btn = document.createElement('div'); btn.className = 'upload-btn';
+                    btn.innerHTML = '<i data-lucide="upload-cloud" class="w-4 h-4"></i> Upload Evidence';
+                    btn.onclick = () => document.getElementById('fileInput').click();
+                    bubble.appendChild(btn); lucide.createIcons();
+                }
+                speak(text);
+            } else { bubble.innerText = text; chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' }); }
+        }
+
+        function handleFileUpload(e) { if(e.target.files.length > 0) { caseData.files = Array.from(e.target.files).map(f => f.name); addMessage('user', `Evidence Files Uploaded: ${caseData.files.join(", ")}`); finalizeCase(); } }
+
+        function sendMessage() {
+            const input = document.getElementById('userInput');
+            const msg = input.value.trim(); if (!msg) return;
+            addMessage('user', msg); input.value = ''; processAstraLogic(msg);
+        }
+
+        function processAstraLogic(input) {
+            const query = input.toLowerCase();
+            if (currentStep === 'category') {
+                if (query.includes('consumer')) { 
+                    caseData.category = 'Consumer'; currentStep = 'collect'; caseData.stepIndex = 0;
+                    caseData.questions = [
+                        { key: 'company', q: "Identify the Opposite Party (Company Name)?" },
+                        { key: 'order_id', q: "Provide the Order ID or Invoice Reference?" },
+                        { key: 'amount', q: "State the Total Paid Amount (INR)?" },
+                        { key: 'issue', q: "Describe the specific problem or grievance in detail?" },
+                        { key: 'relief', q: "What relief do you seek? [Refund], [Replacement], or [Compensation]?" }
+                    ];
+                    addMessage('ai', `Consumer Node active. ${caseData.questions[0].q}`);
+                } else if (query.includes('cyber')) {
+                    caseData.category = 'Cyber'; currentStep = 'cyber_type';
+                    addMessage('ai', "Cyber Node Active. Select Incident Category: [Money Fraud], [Abuse], or [Child Safety]?");
+                }
+                return;
+            }
+
+            if (currentStep === 'cyber_type') {
+                if (query.includes('money')) {
+                    caseData.sub = 'Money Fraud'; currentStep = 'collect'; caseData.stepIndex = 0;
+                    caseData.questions = [
+                        { key: 'loss', q: "State the total financial loss amount?" },
+                        { key: 'platform', q: "Specify the platform where the fraud occurred?" },
+                        { key: 'method', q: "Explain the sequence of events (How it happened)?" },
+                        { key: 'txn_id', q: "Provide the Transaction ID reference?" },
+                        { key: 'evidence', q: "Please upload your evidence files for the transaction.", isEvidence: true }
+                    ];
+                } else if (query.includes('abuse')) {
+                    caseData.sub = 'Abuse'; currentStep = 'collect'; caseData.stepIndex = 0;
+                    caseData.questions = [
+                        { key: 'platform', q: "State the platform where abuse occurred? (WP / Instagram / FB)" },
+                        { key: 'accused_id', q: "Provide the Perpetrator's ID or Profile link?" },
+                        { key: 'timing', q: "When did the incident occur? (Date/Time)" },
+                        { key: 'content', q: "What specific words or content were used?" },
+                        { key: 'evidence', q: "Please upload screenshots as evidence.", isEvidence: true }
+                    ];
+                } else if (query.includes('child')) {
+                    caseData.sub = 'Child Safety'; currentStep = 'collect'; caseData.stepIndex = 0;
+                    caseData.questions = [
+                        { key: 'timing', q: "State the Date and Time of the incident?" },
+                        { key: 'contact', q: "Provide the Profile link or Contact number involved?" },
+                        { key: 'details', q: "Describe the full details of the incident?" },
+                        { key: 'evidence', q: "Upload all available evidence immediately.", isEvidence: true }
+                    ];
+                }
+                addMessage('ai', `${caseData.sub} node engaged. ${caseData.questions[0].q}`);
+                return;
+            }
+
+            if (currentStep === 'collect') {
+                const currentQ = caseData.questions[caseData.stepIndex];
+                caseData[currentQ.key] = input;
+                
+                if(currentQ.key === 'relief') {
+                    if(input.toLowerCase().includes('compensation')) {
+                        caseData.questions.push({ key: 'comp_amt', q: "Specify the desired Compensation Amount?" });
+                    }
+                    caseData.questions.push({ key: 'evidence', q: "Upload relevant evidence documents (Invoice / Screenshots).", isEvidence: true });
+                }
+
+                caseData.stepIndex++;
+                if (caseData.stepIndex < caseData.questions.length) {
+                    const nextQ = caseData.questions[caseData.stepIndex];
+                    addMessage('ai', nextQ.q, nextQ.isEvidence || false);
+                } else if (!caseData.questions[caseData.stepIndex-1].isEvidence) { finalizeCase(); }
+            }
+        }
+
+        function finalizeCase() {
+            addMessage('ai', "Generating Forensic Case Briefing...");
+            setTimeout(() => {
+                let briefing = `CASE SUMMARY [REF: ${user.uid}]\nCategory: ${caseData.category} ${caseData.sub || ''}\nReporter: ${user.name}\n\n`;
+                Object.keys(caseData).forEach(k => { if(typeof caseData[k] === 'string' && k!=='category' && k!=='sub') briefing += `${k.toUpperCase()}: ${caseData[k]}\n`; });
+                if(caseData.files.length) briefing += `EVIDENCE: ${caseData.files.join(", ")}`;
+                document.getElementById('draftContent').innerText = briefing;
+                resetSlider('submitHandle'); showSection('draftView');
+            }, 1500);
+        }
+
+        function speak(text) {
+            if (!window.speechSynthesis) return; window.speechSynthesis.cancel();
+            const utt = new SpeechSynthesisUtterance(text);
+            const display = document.getElementById('speechDisplay');
+            const halo = document.getElementById('halo');
+            const words = text.split(/\s+/);
+            utt.onboundary = (event) => {
+                if (event.name === 'word') {
+                    if(halo) { halo.classList.add('pulse'); setTimeout(() => halo.classList.remove('pulse'), 150); }
+                    const wordIndex = text.substring(0, event.charIndex).trim().split(/\s+/).length;
+                    const chunk = words.slice(Math.floor((wordIndex-1)/3)*3, Math.floor((wordIndex-1)/3)*3 + 3).join(" ");
+                    if (display) display.innerText = chunk;
+                }
+            };
+            utt.onstart = () => document.body.classList.add('is-speaking');
+            utt.onend = () => { document.body.classList.remove('is-speaking'); if (display) display.innerText = ""; };
+            window.speechSynthesis.speak(utt);
+        }
+
+        function closeDraft() { showSection('portal'); }
+        function submitCase() { window.location.href = `mailto:consumerhelpsupport@gmail.com?subject=Astra-${user.uid}&body=${encodeURIComponent(document.getElementById('draftContent').innerText)}`; }
+        document.getElementById('userInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+    </script>
+</body>
+</html>
+
+
